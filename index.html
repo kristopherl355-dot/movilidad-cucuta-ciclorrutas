@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -35,12 +36,36 @@ border-bottom:4px solid #38bdf8;
 
 .panel{
 padding:15px;
+background:#111827;
+}
+
+h2{
+margin-bottom:15px;
+color:#38bdf8;
+font-size:30px;
+}
+
+select,
+textarea{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:12px;
+background:#1e293b;
+color:white;
+font-size:16px;
+}
+
+textarea{
+height:100px;
+resize:none;
 }
 
 button{
 width:100%;
 padding:14px;
-margin-top:10px;
+margin-top:12px;
 border:none;
 border-radius:12px;
 font-size:16px;
@@ -48,45 +73,18 @@ font-weight:bold;
 cursor:pointer;
 background:linear-gradient(90deg,#0ea5e9,#2563eb);
 color:white;
-transition:0.3s;
 box-shadow:0 0 15px rgba(14,165,233,0.5);
+transition:0.3s;
 }
 
 button:hover{
 transform:scale(1.02);
 }
 
-select,input,textarea{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:10px;
-font-size:15px;
-background:#1e293b;
-color:white;
-}
-
-textarea{
-resize:none;
-height:90px;
-}
-
-h2{
-margin-bottom:10px;
-color:#38bdf8;
-}
-
-#estado{
-margin-top:10px;
-text-align:center;
-font-weight:bold;
-}
-
 .loader{
 display:none;
 margin:auto;
-margin-top:10px;
+margin-top:15px;
 border:5px solid #1e293b;
 border-top:5px solid #38bdf8;
 border-radius:50%;
@@ -101,52 +99,99 @@ transform:rotate(360deg);
 }
 }
 
-.filtros{
+#estado{
 margin-top:15px;
+font-weight:bold;
+text-align:center;
+}
+
+.filtros{
+margin-top:20px;
+padding:15px;
 background:#1e293b;
-padding:10px;
-border-radius:10px;
+border-radius:12px;
+}
+
+.filtros h3{
+margin-bottom:10px;
 }
 
 label{
 display:block;
-margin-top:8px;
-}
-
-.botones{
-display:flex;
-gap:10px;
 margin-top:10px;
 }
 
-.botones button{
-flex:1;
+.menuFlotante{
+position:absolute;
+top:20px;
+right:20px;
+z-index:9999;
+background:#1e293b;
+width:50px;
+height:50px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+box-shadow:0 0 15px rgba(0,0,0,0.5);
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div id="map"></div>
 
+<div class="menuFlotante">
+☰
+</div>
+
 <div class="panel">
 
-<h2>🚲 Movilidad Cúcuta</h2>
+<h2>🚴 Movilidad Cúcuta</h2>
 
 <select id="tipo">
-<option value="Accidente">🚨 Accidente</option>
-<option value="Hueco">🕳️ Hueco</option>
-<option value="Tráfico">🚗 Tráfico</option>
-<option value="Cierre vía">⛔ Cierre vía</option>
-<option value="Inseguridad">⚠️ Inseguridad</option>
+
+<option value="Accidente">
+🚨 Accidente
+</option>
+
+<option value="Hueco">
+🕳️ Hueco
+</option>
+
+<option value="Tráfico">
+🚗 Tráfico
+</option>
+
+<option value="Cierre vía">
+⛔ Cierre vía
+</option>
+
+<option value="Inseguridad">
+⚠️ Inseguridad
+</option>
+
 </select>
 
-<textarea id="descripcion"
-placeholder="Describe el reporte"></textarea>
+<textarea
+id="descripcion"
+placeholder="Describe el reporte">
+</textarea>
 
 <button onclick="enviarReporte()">
 📍 Reportar
+</button>
+
+<button onclick="seguirUbicacion()">
+🧭 Seguir mi ubicación
+</button>
+
+<button onclick="toggleCiclorutas()">
+🚴 Mostrar Ciclorutas
 </button>
 
 <div class="loader" id="loader"></div>
@@ -158,41 +203,44 @@ placeholder="Describe el reporte"></textarea>
 <h3>Filtros</h3>
 
 <label>
-<input type="checkbox" checked value="Accidente" class="filtro">
+<input type="checkbox"
+checked
+value="Accidente"
+class="filtro">
 Accidentes
 </label>
 
 <label>
-<input type="checkbox" checked value="Hueco" class="filtro">
+<input type="checkbox"
+checked
+value="Hueco"
+class="filtro">
 Huecos
 </label>
 
 <label>
-<input type="checkbox" checked value="Tráfico" class="filtro">
+<input type="checkbox"
+checked
+value="Tráfico"
+class="filtro">
 Tráfico
 </label>
 
 <label>
-<input type="checkbox" checked value="Cierre vía" class="filtro">
+<input type="checkbox"
+checked
+value="Cierre vía"
+class="filtro">
 Cierre vía
 </label>
 
 <label>
-<input type="checkbox" checked value="Inseguridad" class="filtro">
+<input type="checkbox"
+checked
+value="Inseguridad"
+class="filtro">
 Inseguridad
 </label>
-
-</div>
-
-<div class="botones">
-
-<button id="seguirBtn">
-📍 Seguir ubicación
-</button>
-
-<button id="toggleRoutes">
-🚴 Mostrar Ciclorutas
-</button>
 
 </div>
 
@@ -203,33 +251,31 @@ Inseguridad
 const API_URL =
 "https://script.google.com/macros/s/AKfycbxG-813M47w5pH2h-u62DeH00RfaYRVB9dYi9YLXAh-zYglPzmqEUfAo1tj41GcTVMJ/exec";
 
-// ===== MAPA =====
-let map = L.map('map').setView([7.8891,-72.4967],13);
+let map = L.map("map")
+.setView([7.8891,-72.4967],13);
 
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 {
-attribution:'© OpenStreetMap'
+attribution:"© OpenStreetMap"
 }
 ).addTo(map);
 
-// ===== VARIABLES =====
 let marcadores = [];
 let capaCiclorutas = null;
-let rutasVisibles = false;
-
 let marcadorUsuario = null;
-let seguirUsuario = false;
+let siguiendo = false;
 
-// ===== UBICACIÓN =====
-navigator.geolocation.watchPosition(
+// =========================
+// UBICACIÓN ACTUAL
+// =========================
 
-(pos)=>{
+navigator.geolocation.getCurrentPosition(pos=>{
 
 const lat = pos.coords.latitude;
 const lng = pos.coords.longitude;
 
-if(!marcadorUsuario){
+map.setView([lat,lng],15);
 
 marcadorUsuario = L.circleMarker(
 [lat,lng],
@@ -238,74 +284,62 @@ radius:10,
 fillColor:"#00bfff",
 color:"#ffffff",
 weight:3,
-opacity:1,
 fillOpacity:1
 }
 ).addTo(map);
 
-marcadorUsuario.bindPopup(`
-<b>📍 Tu ubicación</b>
-`);
+});
 
-map.setView([lat,lng],15);
+// =========================
+// SEGUIR UBICACIÓN
+// =========================
 
-}else{
+function seguirUbicacion(){
 
-marcadorUsuario.setLatLng([lat,lng]);
+siguiendo = !siguiendo;
 
-}
+if(siguiendo){
 
-if(seguirUsuario){
+navigator.geolocation.watchPosition(pos=>{
 
-map.setView([lat,lng]);
-
-}
-
-},
-
-(error)=>{
-console.log(error);
-},
-
-{
-enableHighAccuracy:true,
-maximumAge:0,
-timeout:10000
-}
-
-);
-
-// ===== BOTÓN SEGUIR =====
-document
-.getElementById("seguirBtn")
-.addEventListener("click",()=>{
-
-seguirUsuario = !seguirUsuario;
-
-if(seguirUsuario){
-
-document.getElementById("seguirBtn")
-.innerHTML = "🛰️ Siguiendo";
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
 
 if(marcadorUsuario){
 
-map.setView(
-marcadorUsuario.getLatLng(),
-16
-);
+map.removeLayer(marcadorUsuario);
 
 }
 
-}else{
-
-document.getElementById("seguirBtn")
-.innerHTML = "📍 Seguir ubicación";
-
+marcadorUsuario = L.circleMarker(
+[lat,lng],
+{
+radius:10,
+fillColor:"#00bfff",
+color:"#ffffff",
+weight:3,
+fillOpacity:1
 }
+).addTo(map);
+
+map.setView([lat,lng],16);
 
 });
 
-// ===== COLOR =====
+voz("Seguimiento activado");
+
+}else{
+
+voz("Seguimiento desactivado");
+
+}
+
+}
+
+// =========================
+// COLORES
+// =========================
+
 function colorTipo(tipo){
 
 if(tipo==="Accidente") return "red";
@@ -315,12 +349,19 @@ if(tipo==="Cierre vía") return "black";
 if(tipo==="Inseguridad") return "purple";
 
 return "blue";
+
 }
 
-// ===== REPORTES =====
+// =========================
+// CARGAR REPORTES
+// =========================
+
 async function cargarReportes(){
 
-marcadores.forEach(m=>map.removeLayer(m));
+marcadores.forEach(m=>{
+map.removeLayer(m);
+});
+
 marcadores=[];
 
 try{
@@ -329,13 +370,13 @@ const res = await fetch(API_URL);
 
 const datos = await res.json();
 
-const filtrosActivos =
+const filtros =
 [...document.querySelectorAll(".filtro:checked")]
 .map(f=>f.value);
 
 datos.forEach(r=>{
 
-if(!filtrosActivos.includes(r.tipo)) return;
+if(!filtros.includes(r.tipo)) return;
 
 let marker = L.circleMarker(
 [r.lat,r.lng],
@@ -344,7 +385,6 @@ radius:10,
 fillColor:colorTipo(r.tipo),
 color:"#fff",
 weight:2,
-opacity:1,
 fillOpacity:0.8
 }
 ).addTo(map);
@@ -359,20 +399,18 @@ marcadores.push(marker);
 
 });
 
-}catch(e){
+}catch(error){
 
-console.log(e);
-
-}
+console.log(error);
 
 }
 
-document.querySelectorAll(".filtro")
-.forEach(f=>{
-f.addEventListener("change",cargarReportes);
-});
+}
 
-// ===== ENVIAR =====
+// =========================
+// ENVIAR REPORTE
+// =========================
+
 async function enviarReporte(){
 
 const estado =
@@ -387,7 +425,7 @@ document.getElementById("tipo").value;
 const descripcion =
 document.getElementById("descripcion").value;
 
-if(descripcion.length<5){
+if(descripcion.length < 5){
 
 estado.innerHTML =
 "⚠️ Describe mejor el reporte";
@@ -396,8 +434,9 @@ return;
 
 }
 
-loader.style.display="block";
-estado.innerHTML="";
+loader.style.display = "block";
+
+estado.innerHTML = "";
 
 navigator.geolocation.getCurrentPosition(async pos=>{
 
@@ -420,19 +459,19 @@ body:JSON.stringify(datos)
 
 const txt = await res.text();
 
-loader.style.display="none";
+loader.style.display = "none";
 
 estado.innerHTML = txt;
 
 document.getElementById("descripcion").value="";
 
-cargarReportes();
-
 voz(txt);
 
-}catch(e){
+cargarReportes();
 
-loader.style.display="none";
+}catch(error){
+
+loader.style.display = "none";
 
 estado.innerHTML =
 "❌ Error enviando reporte";
@@ -443,25 +482,43 @@ estado.innerHTML =
 
 }
 
-// ===== VOZ =====
+// =========================
+// VOZ
+// =========================
+
 function voz(texto){
 
 const audio =
 new SpeechSynthesisUtterance(texto);
 
-audio.lang="es-ES";
+audio.lang = "es-ES";
 
 speechSynthesis.speak(audio);
 
 }
 
-// ===== CICLORUTAS =====
-async function cargarCiclorutas(){
+// =========================
+// CICLORUTAS
+// =========================
+
+async function toggleCiclorutas(){
+
+if(capaCiclorutas){
+
+map.removeLayer(capaCiclorutas);
+
+capaCiclorutas = null;
+
+voz("Ciclorutas ocultadas");
+
+return;
+
+}
 
 try{
 
 const response =
-await fetch("./ciclorutas.json");
+await fetch("ciclorutas.json");
 
 const data =
 await response.json();
@@ -473,60 +530,45 @@ color:"#00ffff",
 weight:5,
 opacity:0.9
 }
-});
+}).addTo(map);
+
+voz("Ciclorutas mostradas");
 
 }catch(error){
 
-console.log(error);
+alert("Error cargando ciclorutas");
 
 }
 
 }
 
-cargarCiclorutas();
+// =========================
+// FILTROS
+// =========================
 
 document
-.getElementById("toggleRoutes")
-.addEventListener("click",()=>{
+.querySelectorAll(".filtro")
+.forEach(f=>{
 
-if(!capaCiclorutas){
-
-alert("Cargando ciclorutas...");
-return;
-
-}
-
-if(rutasVisibles){
-
-map.removeLayer(capaCiclorutas);
-
-rutasVisibles=false;
-
-document.getElementById("toggleRoutes")
-.innerHTML =
-"🚴 Mostrar Ciclorutas";
-
-}else{
-
-capaCiclorutas.addTo(map);
-
-rutasVisibles=true;
-
-document.getElementById("toggleRoutes")
-.innerHTML =
-"❌ Ocultar Ciclorutas";
-
-}
+f.addEventListener(
+"change",
+cargarReportes
+);
 
 });
 
-// ===== SERVICE WORKER =====
+// =========================
+// SERVICE WORKER
+// =========================
+
 if("serviceWorker" in navigator){
 
 navigator.serviceWorker
 .register("sw.js");
 
 }
+
+// =========================
 
 cargarReportes();
 
