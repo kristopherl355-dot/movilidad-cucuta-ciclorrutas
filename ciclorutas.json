@@ -1,19 +1,54 @@
-{
-"type":"FeatureCollection",
-"features":[
-{
-"type":"Feature",
-"properties":{
-"name":"Cicloruta Centro"
-},
-"geometry":{
-"type":"LineString",
-"coordinates":[
-[-72.4967,7.8891],
-[-72.4920,7.8920],
-[-72.4880,7.8950]
+[
+  {
+    "nombre": "Cicloruta Malecón",
+    "color": "#00e5ff",
+    "coordenadas": [
+      [7.9051, -72.4970],
+      [7.9040, -72.4945],
+      [7.9025, -72.4915],
+      [7.9002, -72.4882],
+      [7.8980, -72.4855]
+    ]
+  },
+  {
+    "nombre": "Cicloruta Avenida Libertadores",
+    "color": "#22c55e",
+    "coordenadas": [
+      [7.8935, -72.5070],
+      [7.8920, -72.5030],
+      [7.8900, -72.4995],
+      [7.8880, -72.4950],
+      [7.8860, -72.4910]
+    ]
+  },
+  {
+    "nombre": "Cicloruta Atalaya",
+    "color": "#f59e0b",
+    "coordenadas": [
+      [7.9170, -72.5260],
+      [7.9140, -72.5230],
+      [7.9105, -72.5190],
+      [7.9070, -72.5150]
+    ]
+  },
+  {
+    "nombre": "Cicloruta Centro",
+    "color": "#ef4444",
+    "coordenadas": [
+      [7.8895, -72.4965],
+      [7.8880, -72.4935],
+      [7.8860, -72.4900],
+      [7.8840, -72.4870]
+    ]
+  },
+  {
+    "nombre": "Cicloruta Canal Bogotá",
+    "color": "#a855f7",
+    "coordenadas": [
+      [7.9300, -72.5000],
+      [7.9260, -72.4970],
+      [7.9220, -72.4940],
+      [7.9180, -72.4910]
+    ]
+  }
 ]
-}
-}
-]
-}
