@@ -1,103 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Movilidad Cúcuta</title>
 
 <link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet/dist/leaflet.css"
+ rel="stylesheet"
+ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
-
 body{
+    margin:0;
+    font-family:Arial;
     background:#0f172a;
     color:white;
 }
 
-header{
-    background:#111827;
-    padding:20px;
-    text-align:center;
-    font-size:28px;
-    font-weight:bold;
-    color:#38bdf8;
-}
-
 #map{
-    height:55vh;
+    height:50vh;
     width:100%;
 }
 
 .panel{
     padding:15px;
-    background:#1e293b;
 }
 
-button{
+input, select, textarea{
     width:100%;
-    padding:16px;
-    margin-top:10px;
-    border:none;
-    border-radius:12px;
-    background:#38bdf8;
-    color:white;
-    font-size:18px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#0ea5e9;
-}
-
-select, textarea{
-    width:100%;
-    padding:14px;
-    margin-top:10px;
+    margin-bottom:10px;
+    padding:12px;
     border:none;
     border-radius:10px;
     font-size:16px;
 }
 
-textarea{
-    resize:none;
-    height:90px;
-}
-
-#estado{
-    margin-top:15px;
-    text-align:center;
+button{
+    width:100%;
+    padding:14px;
+    margin-bottom:10px;
+    border:none;
+    border-radius:12px;
+    background:#38bdf8;
+    color:white;
+    font-size:16px;
     font-weight:bold;
+    cursor:pointer;
 }
 
-.loader{
-    width:45px;
-    height:45px;
-    border:5px solid rgba(255,255,255,0.2);
-    border-top:5px solid #38bdf8;
-    border-radius:50%;
-    animation:giro 1s linear infinite;
-    margin:15px auto;
-    display:none;
+button:hover{
+    opacity:0.9;
 }
 
-@keyframes giro{
-    100%{
-        transform:rotate(360deg);
-    }
+.estado{
+    margin-top:10px;
+    font-weight:bold;
 }
 
 </style>
@@ -105,26 +67,18 @@ textarea{
 
 <body>
 
-<header>
-🚴 Movilidad Cúcuta
-</header>
-
 <div id="map"></div>
 
 <div class="panel">
 
 <select id="tipo">
-    <option value="">Selecciona un problema</option>
-    <option value="Hueco">🕳️ Hueco</option>
-    <option value="Accidente">🚨 Accidente</option>
-    <option value="Inseguridad">⚠️ Inseguridad</option>
-    <option value="Tráfico">🚗 Tráfico</option>
+    <option value="Inseguridad">Inseguridad</option>
+    <option value="Hueco">Hueco</option>
+    <option value="Accidente">Accidente</option>
+    <option value="Tráfico">Tráfico</option>
 </select>
 
-<textarea
-id="descripcion"
-placeholder="Describe el problema..."
-></textarea>
+<textarea id="descripcion" placeholder="Describe el problema"></textarea>
 
 <button onclick="reportar()">
 📍 Reportar
@@ -134,219 +88,148 @@ placeholder="Describe el problema..."
 🧭 Seguir mi ubicación
 </button>
 
-<button onclick="mostrarCiclorutas()">
-🚴 Mostrar Ciclorutas
+<button onclick="cargarReportes()">
+🚴 Mostrar Reportes
 </button>
 
-<div class="loader" id="loader"></div>
-
-<div id="estado"></div>
+<div class="estado" id="estado"></div>
 
 </div>
 
 <script>
 
-/* ========= URL APPS SCRIPT ========= */
-
 const API_URL =
-"https://script.google.com/macros/s/AKfycbwCnN_hupwzmSHHjQMVtdW2n_1td5VaLnCFeuoxSkA32YIyq6WA9uSSR8n6soB9hRV8/exec";
+"https://script.google.com/macros/s/AKfycbzTxFSbaH3xR3Qr7GsNhn1hENm0TufCklEJpp5lf9HTvCBNqlkLoAXcw0_nEGCFQJ76/exec";
 
-/* ========= MAPA ========= */
+/* =========================
+   MAPA
+========================= */
 
-let map = L.map("map").setView([7.8891, -72.4967], 13);
+const map = L.map('map').setView([7.8891, -72.4967], 13);
 
 L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
-    attribution:"© OpenStreetMap"
-}).addTo(map);
-
-/* ========= VARIABLES ========= */
-
-let marcadores = [];
-let marcadorUsuario = null;
-let siguiendo = false;
-
-/* ========= ICONOS ========= */
-
-const iconoReporte = L.icon({
-    iconUrl:"https://cdn-icons-png.flaticon.com/512/684/684908.png",
-    iconSize:[35,35]
-});
-
-const iconoUsuario = L.icon({
-    iconUrl:"https://cdn-icons-png.flaticon.com/512/149/149060.png",
-    iconSize:[35,35]
-});
-
-/* ========= CARGAR REPORTES ========= */
-
-async function cargarReportes(){
-
-    try{
-
-        const res = await fetch(API_URL);
-        const datos = await res.json();
-
-        marcadores.forEach(m => map.removeLayer(m));
-        marcadores = [];
-
-        datos.forEach(rep => {
-
-            if(!rep.lat || !rep.lng) return;
-
-            const marcador = L.marker(
-                [rep.lat, rep.lng],
-                {icon:iconoReporte}
-            ).addTo(map);
-
-            marcador.bindPopup(`
-                <b>${rep.tipo}</b><br>
-                ${rep.descripcion}<br>
-                <small>${rep.fecha}</small>
-            `);
-
-            marcadores.push(marcador);
-
-        });
-
-    }catch(error){
-
-        document.getElementById("estado").innerHTML =
-        "❌ Error cargando reportes";
-
-        console.error(error);
-    }
+    attribution:'© OpenStreetMap'
 }
+).addTo(map);
 
-/* ========= REPORTAR ========= */
+let marcadorUsuario = null;
 
-function reportar(){
+/* =========================
+   SEGUIR UBICACIÓN
+========================= */
 
-    const tipo =
-    document.getElementById("tipo").value;
+function seguirUbicacion(){
 
-    const descripcion =
-    document.getElementById("descripcion").value;
-
-    if(!tipo || !descripcion){
-
-        alert("Completa todos los campos");
-        return;
-    }
-
-    document.getElementById("loader").style.display =
-    "block";
-
-    navigator.geolocation.getCurrentPosition(async pos => {
+    navigator.geolocation.watchPosition(pos => {
 
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
 
-        const datos = {
-            tipo,
-            descripcion,
-            lat,
-            lng
+        if(marcadorUsuario){
+            map.removeLayer(marcadorUsuario);
+        }
+
+        marcadorUsuario = L.marker([lat,lng])
+        .addTo(map)
+        .bindPopup("Tu ubicación");
+
+        map.setView([lat,lng],15);
+
+    });
+
+}
+
+/* =========================
+   REPORTAR
+========================= */
+
+async function reportar(){
+
+    const estado = document.getElementById("estado");
+
+    estado.innerHTML = "⏳ Enviando reporte...";
+
+    navigator.geolocation.getCurrentPosition(async pos => {
+
+        const data = {
+            tipo: document.getElementById("tipo").value,
+            descripcion: document.getElementById("descripcion").value,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
         };
 
         try{
 
             await fetch(API_URL,{
                 method:"POST",
-                body:JSON.stringify(datos)
+                body:JSON.stringify(data)
             });
 
-            document.getElementById("estado").innerHTML =
+            estado.innerHTML =
             "✅ Reporte enviado correctamente";
-
-            document.getElementById("tipo").value = "";
-            document.getElementById("descripcion").value = "";
 
             cargarReportes();
 
-        }catch(error){
+        }catch(err){
 
-            document.getElementById("estado").innerHTML =
+            estado.innerHTML =
             "❌ Error enviando reporte";
 
-            console.error(error);
-        }
+            console.log(err);
 
-        document.getElementById("loader").style.display =
-        "none";
+        }
 
     });
 
 }
 
-/* ========= UBICACIÓN ========= */
+/* =========================
+   CARGAR REPORTES
+========================= */
 
-function seguirUbicacion(){
+async function cargarReportes(){
 
-    siguiendo = !siguiendo;
+    const estado = document.getElementById("estado");
 
-    if(siguiendo){
+    estado.innerHTML = "⏳ Cargando reportes...";
 
-        navigator.geolocation.watchPosition(pos => {
+    try{
 
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
+        const res = await fetch(API_URL);
 
-            if(marcadorUsuario){
+        const datos = await res.json();
 
-                marcadorUsuario.setLatLng([lat,lng]);
+        datos.forEach(r => {
 
-            }else{
+            if(!r.lat || !r.lng) return;
 
-                marcadorUsuario = L.marker(
-                    [lat,lng],
-                    {icon:iconoUsuario}
-                ).addTo(map);
-
-                marcadorUsuario.bindPopup(
-                    "Tu ubicación"
-                );
-            }
-
-            map.setView([lat,lng],16);
+            L.marker([
+                Number(r.lat),
+                Number(r.lng)
+            ])
+            .addTo(map)
+            .bindPopup(`
+                <b>${r.tipo}</b><br>
+                ${r.descripcion}
+            `);
 
         });
 
-        document.getElementById("estado").innerHTML =
-        "🟢 Seguimiento activado";
+        estado.innerHTML =
+        "✅ Reportes cargados";
 
-    }else{
+    }catch(err){
 
-        document.getElementById("estado").innerHTML =
-        "🔴 Seguimiento desactivado";
+        estado.innerHTML =
+        "❌ Error cargando reportes";
+
+        console.log(err);
+
     }
+
 }
-
-/* ========= CICLORUTAS ========= */
-
-function mostrarCiclorutas(){
-
-    const ruta = [
-        [7.893,-72.498],
-        [7.900,-72.490],
-        [7.907,-72.482]
-    ];
-
-    L.polyline(ruta,{
-        color:"#00ff99",
-        weight:6
-    }).addTo(map);
-
-    document.getElementById("estado").innerHTML =
-    "🚴 Ciclorutas mostradas";
-}
-
-/* ========= INICIO ========= */
-
-cargarReportes();
-
-setInterval(cargarReportes, 10000);
 
 </script>
 
