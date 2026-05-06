@@ -1,10 +1,19 @@
-[
 {
-"nombre": "Ruta Centro",
-"coords": [
-[7.8891, -72.4967],
-[7.8910, -72.4950],
-[7.8930, -72.4930]
+"type":"FeatureCollection",
+"features":[
+{
+"type":"Feature",
+"properties":{
+"name":"Cicloruta Centro"
+},
+"geometry":{
+"type":"LineString",
+"coordinates":[
+[-72.4967,7.8891],
+[-72.4920,7.8920],
+[-72.4880,7.8950]
 ]
 }
+}
 ]
+}
