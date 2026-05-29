@@ -117,7 +117,9 @@ animation:girar 1s linear infinite;
 transform:rotate(360deg);
 }
 }
-
+ .glowRuta{
+filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
+}
 </style>
 
 </head>
@@ -194,7 +196,7 @@ placeholder="Describe el problema..."
 <script>
 
 const API_URL =
-"https://script.google.com/macros/s/AKfycbze2Ygd7YK1Eastsv3x29PLOnzDSxaMs-SaDcceXEN6hSx5NyXk8ao63RidUeBQ_gir/exec;
+"https://script.google.com/macros/s/AKfycbxbv0wvs5BbOX48_iMqxJzKexWKJ7-kJ-wY4QsY4qE22L7pxRIx_GhokvSqmK15UxJA/exec";
 
 let map = L.map("map").setView(
 [7.8891,-72.4967],
@@ -449,6 +451,15 @@ marker.bindPopup(`
 ${r.descripcion}
 <br><br>
 🕒 ${r.fecha}
+<br><br>
+
+<button onclick="validarReporte(
+${r.id},
+${r.lat},
+${r.lng}
+)">
+✅ Ya no está
+</button>
 `);
 
 reportes.push(marker);
@@ -465,7 +476,81 @@ document.getElementById("estado")
 .innerHTML =
 "❌ Error cargando reportes";
 
+console.error(error);
+
 }
+
+}
+
+// =======================
+// VALIDAR REPORTE
+// =======================
+
+async function validarReporte(id,lat,lng){
+
+navigator.geolocation.getCurrentPosition(
+async pos=>{
+
+const miLat = pos.coords.latitude;
+const miLng = pos.coords.longitude;
+
+const distancia = Math.sqrt(
+
+Math.pow(miLat-lat,2)+
+Math.pow(miLng-lng,2)
+
+);
+
+if(distancia > 0.002){
+
+alert(
+"⚠️ Debes estar cerca del reporte"
+);
+
+return;
+
+}
+
+const confirmar =
+confirm(
+"¿Confirmas que el problema ya no existe?"
+);
+
+if(!confirmar) return;
+
+try{
+
+const res = await fetch(
+API_URL,
+{
+method:"POST",
+body:JSON.stringify({
+eliminar:true,
+id:id
+})
+}
+);
+
+const txt = await res.text();
+
+alert(txt);
+
+hablar(txt);
+
+cargarReportes();
+
+}catch(error){
+
+alert(
+"❌ Error eliminando reporte"
+);
+
+console.error(error);
+
+}
+
+}
+);
 
 }
 
@@ -509,14 +594,29 @@ L.polyline(
 ruta.coordenadas,
 {
 color:ruta.color,
-weight:7,
-opacity:0.9
+weight:8,
+opacity:0.95,
+lineCap:"round",
+lineJoin:"round",
+dashArray:"10,6"
 }
 );
 
 linea.bindPopup(
 "🚴 " + ruta.nombre
 );
+
+linea.bindTooltip(
+"🚴 " + ruta.nombre,
+{
+permanent:false,
+direction:"top"
+}
+);
+
+linea.setStyle({
+className:"glowRuta"
+});
 
 capaCiclorutas.addLayer(linea);
 
@@ -535,6 +635,8 @@ hablar("Ciclorutas cargadas");
 document.getElementById("estado")
 .innerHTML =
 "❌ Error cargando ciclorutas";
+
+console.error(error);
 
 }
 
