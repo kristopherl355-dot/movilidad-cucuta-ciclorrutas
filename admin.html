@@ -251,7 +251,7 @@ function eliminarReporte(fechaId, filaIdVisual) {
 async function cargarDatosDesdeSheets() {
     try {
         // 1. CARGAR REPORTE DE ACCIDENTES
-        const resReportes = await fetch(`${URL_SCRIPT_GOOGLE}?accion=reportes`);
+        const resReportes = await fetch(URL_SCRIPT_GOOGLE);
         // Si tu doGet por defecto ya da los reportes sin pasar parámetro, puedes usar simplemente:
         // const resReportes = await fetch(URL_SCRIPT_GOOGLE);
         
