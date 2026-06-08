@@ -245,6 +245,82 @@ function eliminarReporte(fechaId, filaIdVisual) {
         });
     }
 }
+    // ANEXAR ESTO AL FINAL DE TU <script> EN ADMIN.HTML
+
+// Función para cargar los datos reales automáticamente al abrir el panel
+async function cargarDatosDesdeSheets() {
+    try {
+        // 1. CARGAR REPORTE DE ACCIDENTES
+        const resReportes = await fetch(`${URL_SCRIPT_GOOGLE}?accion=reportes`);
+        // Si tu doGet por defecto ya da los reportes sin pasar parámetro, puedes usar simplemente:
+        // const resReportes = await fetch(URL_SCRIPT_GOOGLE);
+        
+        if (resReportes.ok) {
+            const reportes = await resReportes.json();
+            const tablaRep = document.getElementById('tabla-accidentes');
+            tablaRep.innerHTML = ""; // Limpia los ejemplos estáticos de la pantalla
+
+            reportes.forEach((rep, index) => {
+                const fila = document.createElement('tr');
+                const idVisual = `rep_${index}`;
+                fila.id = `fila-${idVisual}`;
+                
+                // Pasamos la fecha exacta como string (rep.fecha) para que la busque y la borre en Sheets
+                fila.innerHTML = `
+                    <td>${rep.descripcion}</td>
+                    <td>${rep.lat}, ${rep.lng}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="eliminarReporte('${rep.fecha}', '${idVisual}')">
+                            Eliminar Reporte
+                        </button>
+                    </td>
+                `;
+                tablaRep.appendChild(fila);
+            });
+        }
+
+        // 2. CARGAR INVENTARIO DE NEGOCIOS
+        const resNegocios = await fetch(`${URL_SCRIPT_GOOGLE}?accion=negocios`);
+        if (resNegocios.ok) {
+            const negocios = await resNegocios.json();
+            const tablaNeg = document.getElementById('tabla-negocios');
+            tablaNeg.innerHTML = ""; // Limpia el negocio de ejemplo de la pantalla
+
+            negocios.forEach((neg, index) => {
+                const idVisual = `neg_${index}`;
+                const fila = document.createElement('tr');
+                fila.id = `fila-${idVisual}`;
+                
+                // Verifica si en Sheets está marcado como VERDADERO para activar el switch visual
+                const estaDestacado = (neg.destacado === "VERDADERO" || neg.destacado === true);
+
+                fila.innerHTML = `
+                    <td>
+                        <strong>${neg.nombre}</strong> <br>
+                        <span id="badge-${idVisual}" class="badge-premium" style="display: ${estaDestacado ? 'inline-block' : 'none'};">PREMIUM ⭐</span>
+                    </td>
+                    <td>${neg.tipo}</td>
+                    <td>${neg.lat}, ${neg.lng}</td>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" ${estaDestacado ? 'checked' : ''} onchange="toggleDestacado('${neg.nombre}', '${idVisual}', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                    <td><span class="status approved">Aprobado</span></td>
+                    <td><button class="btn btn-danger" onclick="eliminarNegocio('${neg.nombre}', '${idVisual}')">Eliminar</button></td>
+                `;
+                tablaNeg.appendChild(fila);
+            });
+        }
+
+    } catch (error) {
+        console.error("Error cargando los datos iniciales de Sheets:", error);
+    }
+}
+
+// Ejecutar la carga automática apenas la ventana termine de renderizarse
+window.onload = cargarDatosDesdeSheets;
 </script>
 </body>
 </html>
