@@ -236,14 +236,40 @@ function eliminarNegocio(nombreReal, idVisual) {
 }
 
 // 4. Envío al borrar un reporte de accidente
-function eliminarReporte(fechaId, filaIdVisual) {
-    if(confirm("¿Deseas dar por solucionado este reporte y quitarlo de la base de datos?")) {
-        document.getElementById(`fila-${filaIdVisual}`).remove();
-        enviarAGoogleSheets({
-            accion: "eliminarReporte",
-            fechaId: fechaId
-        });
+async function eliminarReporte(descripcion, lat, lng, filaIdVisual){
+
+    if(!confirm("¿Deseas eliminar este reporte?")){
+        return;
     }
+
+    try{
+
+        await fetch(URL_SCRIPT_GOOGLE,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                accion:"eliminarReporte",
+                descripcion:descripcion,
+                lat:lat,
+                lng:lng
+            })
+        });
+
+        document
+        .getElementById(`fila-${filaIdVisual}`)
+        .remove();
+
+        alert("✅ Reporte eliminado");
+
+    }catch(error){
+
+        console.error(error);
+        alert("❌ Error eliminando reporte");
+
+    }
+
 }
     // ANEXAR ESTO AL FINAL DE TU <script> EN ADMIN.HTML
 
@@ -266,15 +292,21 @@ async function cargarDatosDesdeSheets() {
                 fila.id = `fila-${idVisual}`;
                 
                 // Pasamos la fecha exacta como string (rep.fecha) para que la busque y la borre en Sheets
-                fila.innerHTML = `
-                    <td>${rep.descripcion}</td>
-                    <td>${rep.lat}, ${rep.lng}</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="eliminarReporte('${rep.fecha}', '${idVisual}')">
-                            Eliminar Reporte
-                        </button>
-                    </td>
-                `;
+              fila.innerHTML = `
+    <td>${rep.descripcion}</td>
+    <td>${rep.lat}, ${rep.lng}</td>
+    <td>
+        <button class="btn btn-danger"
+        onclick="eliminarReporte(
+        '${rep.descripcion.replace(/'/g,"\\'")}',
+        ${rep.lat},
+        ${rep.lng},
+        '${idVisual}'
+        )">
+            Eliminar Reporte
+        </button>
+    </td>
+`;
                 tablaRep.appendChild(fila);
             });
         }
