@@ -244,7 +244,7 @@ async function eliminarReporte(descripcion, lat, lng, filaIdVisual){
 
     try{
 
-       await fetch(URL_SCRIPT_GOOGLE,{
+      await fetch(URL_SCRIPT_GOOGLE,{
     method:"POST",
     mode:"no-cors",
     body:JSON.stringify({
