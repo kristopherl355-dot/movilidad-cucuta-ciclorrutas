@@ -218,7 +218,56 @@ let marcadorUsuario = null;
 let watchID = null;
 let reportes = [];
 let capaCiclorutas = null;
+let marcadoresNegocios = [];
 
+async function cargarNegocios(){
+
+  marcadoresNegocios.forEach(m=>{
+    map.removeLayer(m);
+  });
+
+  marcadoresNegocios = [];
+
+  try{
+
+    const res = await fetch(
+      API_URL + "?accion=negocios&t=" + Date.now()
+    );
+
+    const negocios = await res.json();
+
+    negocios.forEach(n=>{
+
+      const premium =
+        n.destacado === "VERDADERO" ||
+        n.destacado === true;
+
+      const marker = L.marker(
+        [Number(n.lat), Number(n.lng)],
+        {
+          icon: premium ? iconoPremium : iconoNormal
+        }
+      ).addTo(map);
+
+      marker.bindPopup(`
+        <b>${premium ? '⭐ NEGOCIO PREMIUM' : '🏪 NEGOCIO'}</b>
+        <br><br>
+        ${n.nombre}
+        <br>
+        ${n.tipo}
+        <br>
+        📞 ${n.telefono}
+      `);
+
+      marcadoresNegocios.push(marker);
+
+    });
+
+  }catch(error){
+    console.error(error);
+  }
+
+}
 // =======================
 // ICONOS
 // =======================
@@ -234,7 +283,14 @@ iconUrl:
 "https://cdn-icons-png.flaticon.com/512/684/684908.png",
 iconSize:[35,35]
 });
-
+const iconoPremium = L.icon({
+  iconUrl:"https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+  iconSize:[50,50]
+});
+const iconoNormal = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png",
+  iconSize: [35,35]
+});
 // =======================
 // VOZ
 // =======================
@@ -624,11 +680,10 @@ lng:pos.coords.longitude
 // =======================
 
 cargarReportes();
+cargarNegocios();
 
-setInterval(
-cargarReportes,
-10000
-);
+setInterval(cargarReportes, 10000);
+setInterval(cargarNegocios, 30000);
 
 </script>
 
