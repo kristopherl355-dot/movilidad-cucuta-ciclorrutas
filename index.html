@@ -410,7 +410,6 @@ loader.style.display = "none";
 // =======================
 // CARGAR REPORTES
 // =======================
-
 async function cargarReportes(){
   try {
     reportes.forEach(r => {
@@ -418,8 +417,8 @@ async function cargarReportes(){
     });
     reportes = [];
 
-    // CAMBIO AQUÍ: Llamamos sin parámetros extras para que el doGet nuevo te entregue la lista limpia
-    const res = await fetch(API_URL);
+    // Le agregamos el timestamp para burlar por completo la caché del navegador
+    const res = await fetch(API_URL + "?t=" + Date.now());
     const datos = await res.json();
 
     datos.forEach(r => {
@@ -430,7 +429,9 @@ async function cargarReportes(){
         { icon: iconoReporte }
       ).addTo(map);
 
-      // MODIFICACIÓN: Pasamos la FECHA (r.fecha) en lugar del index para que use el nuevo método de borrado si es necesario
+      // Ahora el botón pasa: Descripción (escapando comillas), Latitud y Longitud
+      const descEscapada = r.descripcion.replace(/'/g, "\\'");
+      
       marker.bindPopup(`
         <b>${r.tipo}</b>
         <br><br>
@@ -438,7 +439,7 @@ async function cargarReportes(){
         <br><br>
         🕒 ${r.fecha}
         <br><br>
-        <button onclick="validarReporte('${r.fecha}', ${r.lat}, ${r.lng})">
+        <button onclick="validarReporte('${descEscapada}', ${r.lat}, ${r.lng})">
           ✅ Ya no está
         </button>
       `);
@@ -452,11 +453,11 @@ async function cargarReportes(){
     console.error(error);
   }
 }
+
 // =======================
 // VALIDAR REPORTE
 // =======================
-
-async function validarReporte(fechaId, lat, lng){
+async function validarReporte(descripcion, lat, lng){
   navigator.geolocation.getCurrentPosition(async pos => {
     const miLat = pos.coords.latitude;
     const miLng = pos.coords.longitude;
@@ -474,17 +475,16 @@ async function validarReporte(fechaId, lat, lng){
     if(!confirmar) return;
 
     try {
-      // CAMBIO AQUÍ: Enviamos la estructura compatible con tu nuevo Apps Script unificado
       const res = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
           accion: "eliminarReporte",
-          fechaId: fechaId.toString()
+          descripcion: descripcion,
+          lat: lat,
+          lng: lng
         })
       });
 
-      const txt = await res.text();
-      // Si el script devuelve un JSON, extraemos el status, si no, mostramos el texto directo
       alert("✅ Reporte procesado correctamente");
       hablar("Reporte eliminado");
       cargarReportes();
