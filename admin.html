@@ -152,65 +152,99 @@
 
 <script>
     // --- LÓGICA DE NEGOCIOS ---
-    function agregarNegocio(event) {
-        event.preventDefault();
-        
-        const nombre = document.getElementById('neg-nombre').value;
-        const categoria = document.getElementById('neg-categoria').value;
-        const lat = document.getElementById('neg-lat').value;
-        const lng = document.getElementById('neg-lng').value;
-        const id = 'neg_' + Date.now(); // Genera un ID único basado en el tiempo
+// ⚠️ PEGA AQUÍ TU URL DE LA IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
+const URL_SCRIPT_GOOGLE = "https://script.google.com/macros/s/AKfycbycZuNxdYFsXNMJ4DGr1DAAyggANzjLwkWUOtAN6xrviqgLH5hnFhVo4SgxisAvxU9j/exec";
 
-        const nuevaFila = document.createElement('tr');
-        nuevaFila.id = `fila-${id}`;
-        nuevaFila.innerHTML = `
-            <td>
-                <strong class="nombre-txt">${nombre}</strong> <br>
-                <span id="badge-${id}" class="badge-premium" style="display:none;">PREMIUM ⭐</span>
-            </td>
-            <td>${categoria}</td>
-            <td>${lat}, ${lng}</td>
-            <td>
-                <label class="switch">
-                    <input type="checkbox" id="check-${id}" onchange="toggleDestacado('${id}', this.checked)">
-                    <span class="slider"></span>
-                </label>
-            </td>
-            <td><span class="status approved">Aprobado</span></td>
-            <td><button class="btn btn-danger" onclick="eliminarNegocio('${id}')">Eliminar</button></td>
-        `;
-
-        document.getElementById('tabla-negocios').appendChild(nuevaFila);
-        document.getElementById('form-negocio').reset();
-        
-        console.log(`Negocio agregado localmente. Aquí enviarás los datos a Google Sheets usando fetch().`);
+// Función intermediaria para enviar los datos por método POST
+async function enviarAGoogleSheets(datos) {
+    try {
+        await fetch(URL_SCRIPT_GOOGLE, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        console.log("Sincronizado con Sheets con éxito:", datos);
+    } catch (error) {
+        console.error("Error de sincronización:", error);
     }
+}
 
-    function toggleDestacado(id, isChecked) {
-        const badge = document.getElementById(`badge-${id}`);
-        if (badge) {
-            badge.style.display = isChecked ? 'inline-block' : 'none';
-        }
-        console.log(`Negocio ${id} -> Estado destacado enviado a Sheets: ${isChecked}`);
-        // Aquí conectarás tu fetch() para cambiar la celda de la columna "Destacado"
-    }
+// 1. Envío al añadir un nuevo negocio
+function agregarNegocio(event) {
+    event.preventDefault();
+    
+    const nombre = document.getElementById('neg-nombre').value;
+    const tipo = document.getElementById('neg-categoria').value; 
+    const telefono = "Sin Telefono"; 
+    const lat = parseFloat(document.getElementById('neg-lat').value);
+    const lng = parseFloat(document.getElementById('neg-lng').value);
 
-    function eliminarNegocio(id) {
-        if(confirm("¿Seguro que deseas eliminar este negocio del sistema?")) {
-            document.getElementById(`fila-${id}`).remove();
-            console.log(`Negocio ${id} eliminado.`);
-            // Aquí conectarás el fetch() para borrar la fila en Sheets
-        }
-    }
+    const idLimpio = nombre.replace(/\s+/g, '_'); 
+    const nuevaFila = document.createElement('tr');
+    nuevaFila.id = `fila-${idLimpio}`;
+    nuevaFila.innerHTML = `
+        <td>
+            <strong>${nombre}</strong> <br>
+            <span id="badge-${idLimpio}" class="badge-premium" style="display:none;">PREMIUM ⭐</span>
+        </td>
+        <td>${tipo}</td>
+        <td>${lat}, ${lng}</td>
+        <td>
+            <label class="switch">
+                <input type="checkbox" onchange="toggleDestacado('${nombre}', '${idLimpio}', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </td>
+        <td><span class="status approved">Aprobado</span></td>
+        <td><button class="btn btn-danger" onclick="eliminarNegocio('${nombre}', '${idLimpio}')">Eliminar</button></td>
+    `;
+    document.getElementById('tabla-negocios').appendChild(nuevaFila);
+    document.getElementById('form-negocio').reset();
 
-    // --- LÓGICA DE ACCIDENTES ---
-    function eliminarReporte(id) {
-        if(confirm("¿Deseas dar por solucionado este accidente y quitarlo del mapa?")) {
-            document.getElementById(`fila-${id}`).remove();
-            console.log(`Accidente ${id} eliminado.`);
-            // Aquí conectarás tu fetch() para borrar el accidente de tu Google Sheets
-        }
+    enviarAGoogleSheets({
+        accion: "agregarNegocio",
+        nombre: nombre,
+        tipo: tipo,
+        telefono: telefono,
+        lat: lat,
+        lng: lng
+    });
+}
+
+// 2. Envío al cambiar interruptor de Destacado
+function toggleDestacado(nombreReal, idVisual, isChecked) {
+    const badge = document.getElementById(`badge-${idVisual}`);
+    if (badge) badge.style.display = isChecked ? 'inline-block' : 'none';
+
+    enviarAGoogleSheets({
+        accion: "toggleDestacado",
+        nombre: nombreReal,
+        destacado: isChecked
+    });
+}
+
+// 3. Envío al borrar un negocio
+function eliminarNegocio(nombreReal, idVisual) {
+    if(confirm(`¿Seguro que deseas eliminar a "${nombreReal}"?`)) {
+        document.getElementById(`fila-${idVisual}`).remove();
+        enviarAGoogleSheets({
+            accion: "eliminarNegocio",
+            nombre: nombreReal
+        });
     }
+}
+
+// 4. Envío al borrar un reporte de accidente
+function eliminarReporte(fechaId, filaIdVisual) {
+    if(confirm("¿Deseas dar por solucionado este reporte y quitarlo de la base de datos?")) {
+        document.getElementById(`fila-${filaIdVisual}`).remove();
+        enviarAGoogleSheets({
+            accion: "eliminarReporte",
+            fechaId: fechaId
+        });
+    }
+}
 </script>
 </body>
 </html>
