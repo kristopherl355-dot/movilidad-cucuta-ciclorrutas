@@ -412,148 +412,89 @@ loader.style.display = "none";
 // =======================
 
 async function cargarReportes(){
+  try {
+    reportes.forEach(r => {
+      map.removeLayer(r);
+    });
+    reportes = [];
 
-try{
+    // CAMBIO AQUÍ: Llamamos sin parámetros extras para que el doGet nuevo te entregue la lista limpia
+    const res = await fetch(API_URL);
+    const datos = await res.json();
 
-reportes.forEach(r=>{
-map.removeLayer(r);
-});
+    datos.forEach(r => {
+      if(!r.lat || !r.lng) return;
 
-reportes = [];
+      const marker = L.marker(
+        [Number(r.lat), Number(r.lng)],
+        { icon: iconoReporte }
+      ).addTo(map);
 
-const res =
-await fetch(
-API_URL + "?t=" + Date.now()
-);
+      // MODIFICACIÓN: Pasamos la FECHA (r.fecha) en lugar del index para que use el nuevo método de borrado si es necesario
+      marker.bindPopup(`
+        <b>${r.tipo}</b>
+        <br><br>
+        ${r.descripcion}
+        <br><br>
+        🕒 ${r.fecha}
+        <br><br>
+        <button onclick="validarReporte('${r.fecha}', ${r.lat}, ${r.lng})">
+          ✅ Ya no está
+        </button>
+      `);
 
-const datos =
-await res.json();
+      reportes.push(marker);
+    });
 
-datos.forEach(r=>{
-
-if(!r.lat || !r.lng) return;
-
-const marker =
-L.marker(
-[
-Number(r.lat),
-Number(r.lng)
-],
-{
-icon:iconoReporte
+    document.getElementById("estado").innerHTML = "✅ Reportes cargados";
+  } catch(error) {
+    document.getElementById("estado").innerHTML = "❌ Error cargando reportes";
+    console.error(error);
+  }
 }
-)
-.addTo(map);
-
-marker.bindPopup(`
-<b>${r.tipo}</b>
-<br><br>
-${r.descripcion}
-<br><br>
-🕒 ${r.fecha}
-<br><br>
-
-<button onclick="validarReporte(
-${r.id},
-${r.lat},
-${r.lng}
-)">
-✅ Ya no está
-</button>
-`);
-
-reportes.push(marker);
-
-});
-
-document.getElementById("estado")
-.innerHTML =
-"✅ Reportes cargados";
-
-}catch(error){
-
-document.getElementById("estado")
-.innerHTML =
-"❌ Error cargando reportes";
-
-console.error(error);
-
-}
-
-}
-
 // =======================
 // VALIDAR REPORTE
 // =======================
 
-async function validarReporte(id,lat,lng){
+async function validarReporte(fechaId, lat, lng){
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const miLat = pos.coords.latitude;
+    const miLng = pos.coords.longitude;
 
-navigator.geolocation.getCurrentPosition(
-async pos=>{
+    const distancia = Math.sqrt(
+      Math.pow(miLat - lat, 2) + Math.pow(miLng - lng, 2)
+    );
 
-const miLat = pos.coords.latitude;
-const miLng = pos.coords.longitude;
+    if(distancia > 0.002){
+      alert("⚠️ Debes estar cerca del reporte");
+      return;
+    }
 
-const distancia = Math.sqrt(
+    const confirmar = confirm("¿Confirmas que el problema ya no existe?");
+    if(!confirmar) return;
 
-Math.pow(miLat-lat,2)+
-Math.pow(miLng-lng,2)
+    try {
+      // CAMBIO AQUÍ: Enviamos la estructura compatible con tu nuevo Apps Script unificado
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          accion: "eliminarReporte",
+          fechaId: fechaId.toString()
+        })
+      });
 
-);
+      const txt = await res.text();
+      // Si el script devuelve un JSON, extraemos el status, si no, mostramos el texto directo
+      alert("✅ Reporte procesado correctamente");
+      hablar("Reporte eliminado");
+      cargarReportes();
 
-if(distancia > 0.002){
-
-alert(
-"⚠️ Debes estar cerca del reporte"
-);
-
-return;
-
+    } catch(error) {
+      alert("❌ Error eliminando reporte");
+      console.error(error);
+    }
+  });
 }
-
-const confirmar =
-confirm(
-"¿Confirmas que el problema ya no existe?"
-);
-
-if(!confirmar) return;
-
-try{
-
-const res = await fetch(
-API_URL,
-{
-method:"POST",
-body:JSON.stringify({
-eliminar:true,
-id:id
-})
-}
-);
-
-const txt = await res.text();
-
-alert(txt);
-
-hablar(txt);
-
-cargarReportes();
-
-}catch(error){
-
-alert(
-"❌ Error eliminando reporte"
-);
-
-console.error(error);
-
-}
-
-}
-);
-
-}
-
 // =======================
 // CICLORUTAS
 // =======================
