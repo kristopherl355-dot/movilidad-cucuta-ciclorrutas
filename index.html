@@ -1,23 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>🚴 Ciclorutas Cúcuta</title>
-
 <link rel="manifest" href="manifest.json">
-
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"
-/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -121,7 +112,6 @@ transform:rotate(360deg);
 filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
 }
 </style>
-
 </head>
 
 <body>
@@ -133,70 +123,37 @@ filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
 <div id="map"></div>
 
 <div class="panel">
-
 <div class="card">
 
 <select id="tipo">
-
-<option value="">
-📌 Selecciona un reporte
-</option>
-
-<option value="🚧 Hueco">
-🚧 Hueco
-</option>
-
-<option value="🚗 Tráfico">
-🚗 Tráfico
-</option>
-
-<option value="🚨 Accidente">
-🚨 Accidente
-</option>
-
-<option value="⚠️ Inseguridad">
-⚠️ Inseguridad
-</option>
-
-<option value="⛔ Cierre vía">
-⛔ Cierre vía
-</option>
-
+<option value="">📌 Selecciona un reporte</option>
+<option value="🚧 Hueco">🚧 Hueco</option>
+<option value="🚗 Tráfico">🚗 Tráfico</option>
+<option value="🚨 Accidente">🚨 Accidente</option>
+<option value="⚠️ Inseguridad">⚠️ Inseguridad</option>
+<option value="⛔ Cierre vía">⛔ Cierre vía</option>
 </select>
 
-<textarea
-id="descripcion"
-placeholder="Describe el problema..."
-></textarea>
+<textarea id="descripcion" placeholder="Describe el problema..."></textarea>
 
-<button onclick="enviarReporte()">
-📍 Reportar
-</button>
-
-<button onclick="seguirUbicacion()">
-🧭 Seguir ubicación
-</button>
-
-<button onclick="mostrarCiclorutas()">
-🚴 Mostrar ciclorutas
-</button>
-
-<button onclick="cargarReportes()">
-📌 Mostrar reportes
-</button>
+<button onclick="enviarReporte()">📍 Reportar</button>
+<button onclick="seguirUbicacion()">🧭 Seguir ubicación</button>
+<button onclick="mostrarCiclorutas()">🚴 Mostrar ciclorutas</button>
+<button onclick="cargarReportes()">📌 Mostrar reportes</button>
 
 <div class="loader" id="loader"></div>
-
 <div id="estado"></div>
 
 </div>
-
 </div>
 
 <script>
-
 const API_URL =
 "https://script.google.com/macros/s/AKfycbzmkjOOZhdBSPNM9eyAtPDH2UPTvNLXySMTI19Rv_Gr9wQNGh51HPfha0gAldg4zpNA/exec";
+
+if ("serviceWorker" in navigator) {
+navigator.serviceWorker.register("sw.js").catch(console.error);
+}
 
 let map = L.map("map").setView(
 [7.8891,-72.4967],
@@ -221,7 +178,6 @@ let capaCiclorutas = null;
 let marcadoresNegocios = [];
 
 async function cargarNegocios(){
-
   marcadoresNegocios.forEach(m=>{
     map.removeLayer(m);
   });
@@ -229,14 +185,15 @@ async function cargarNegocios(){
   marcadoresNegocios = [];
 
   try{
-
     const res = await fetch(
       API_URL + "?accion=negocios&t=" + Date.now()
     );
 
-    const negocios = await res.json();
+    const payload = await res.json();
+    const negocios = Array.isArray(payload) ? payload : (payload.data || []);
 
     negocios.forEach(n=>{
+      if(!n.lat || !n.lng) return;
 
       const premium =
         n.destacado === "VERDADERO" ||
@@ -252,25 +209,20 @@ async function cargarNegocios(){
       marker.bindPopup(`
         <b>${premium ? '⭐ NEGOCIO PREMIUM' : '🏪 NEGOCIO'}</b>
         <br><br>
-        ${n.nombre}
+        ${escaparHtml(n.nombre)}
         <br>
-        ${n.tipo}
+        ${escaparHtml(n.tipo)}
         <br>
-        📞 ${n.telefono}
+        📞 ${escaparHtml(n.telefono || "")}
       `);
 
       marcadoresNegocios.push(marker);
-
     });
 
   }catch(error){
     console.error(error);
   }
-
 }
-// =======================
-// ICONOS
-// =======================
 
 const iconoUsuario = L.icon({
 iconUrl:
@@ -283,35 +235,26 @@ iconUrl:
 "https://cdn-icons-png.flaticon.com/512/684/684908.png",
 iconSize:[35,35]
 });
+
 const iconoPremium = L.icon({
   iconUrl:"https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
   iconSize:[50,50]
 });
+
 const iconoNormal = L.icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png",
   iconSize: [35,35]
 });
-// =======================
-// VOZ
-// =======================
 
 function hablar(texto){
-
+if(!("speechSynthesis" in window)) return;
 const voz =
 new SpeechSynthesisUtterance(texto);
-
 voz.lang = "es-ES";
-
 speechSynthesis.speak(voz);
-
 }
 
-// =======================
-// UBICACIÓN
-// =======================
-
 navigator.geolocation.getCurrentPosition(pos=>{
-
 const lat = pos.coords.latitude;
 const lng = pos.coords.longitude;
 
@@ -326,39 +269,27 @@ icon:iconoUsuario
 )
 .addTo(map)
 .bindPopup("📍 Tu ubicación");
-
 });
 
 function seguirUbicacion(){
-
 if(watchID){
-
 navigator.geolocation.clearWatch(watchID);
-
 watchID = null;
-
 document.getElementById("estado")
 .innerHTML =
 "🛑 Seguimiento detenido";
-
 hablar("Seguimiento detenido");
-
 return;
-
 }
 
 watchID =
 navigator.geolocation.watchPosition(pos=>{
-
 const lat = pos.coords.latitude;
 const lng = pos.coords.longitude;
 
 if(marcadorUsuario){
-
 marcadorUsuario.setLatLng([lat,lng]);
-
 }else{
-
 marcadorUsuario =
 L.marker(
 [lat,lng],
@@ -367,27 +298,18 @@ icon:iconoUsuario
 }
 )
 .addTo(map);
-
 }
 
 map.setView([lat,lng],16);
-
 });
 
 document.getElementById("estado")
 .innerHTML =
 "🟢 Seguimiento activado";
-
 hablar("Seguimiento activado");
-
 }
 
-// =======================
-// REPORTAR
-// =======================
-
 async function enviarReporte(){
-
 const tipo =
 document.getElementById("tipo").value;
 
@@ -401,31 +323,23 @@ const loader =
 document.getElementById("loader");
 
 if(!tipo || descripcion.length < 5){
-
 estado.innerHTML =
 "⚠️ Describe mejor el reporte";
-
 hablar("Describe mejor el reporte");
-
 return;
-
 }
 
 loader.style.display = "block";
 
 navigator.geolocation.getCurrentPosition(async pos=>{
-
 const datos = {
-
 tipo,
 descripcion,
 lat:pos.coords.latitude,
 lng:pos.coords.longitude
-
 };
 
 try{
-
 const res =
 await fetch(
 API_URL,
@@ -439,33 +353,22 @@ const txt =
 await res.text();
 
 estado.innerHTML = txt;
-
 hablar(txt);
-
 document.getElementById(
 "descripcion"
 ).value = "";
-
 cargarReportes();
 
 }catch(error){
-
 estado.innerHTML =
 "❌ Error enviando reporte";
-
 hablar("Error enviando reporte");
-
 }
 
 loader.style.display = "none";
-
 });
-
 }
 
-// =======================
-// CARGAR REPORTES
-// =======================
 async function cargarReportes(){
   try {
     reportes.forEach(r => {
@@ -473,9 +376,9 @@ async function cargarReportes(){
     });
     reportes = [];
 
-    // Le agregamos el timestamp para burlar por completo la caché del navegador
     const res = await fetch(API_URL + "?t=" + Date.now());
-    const datos = await res.json();
+    const payload = await res.json();
+    const datos = Array.isArray(payload) ? payload : (payload.data || []);
 
     datos.forEach(r => {
       if(!r.lat || !r.lng) return;
@@ -485,17 +388,16 @@ async function cargarReportes(){
         { icon: iconoReporte }
       ).addTo(map);
 
-      // Ahora el botón pasa: Descripción (escapando comillas), Latitud y Longitud
-      const descEscapada = r.descripcion.replace(/'/g, "\\'");
+      const descEscapada = String(r.descripcion || "").replace(/'/g, "\\'");
       
       marker.bindPopup(`
-        <b>${r.tipo}</b>
+        <b>${escaparHtml(r.tipo)}</b>
         <br><br>
-        ${r.descripcion}
+        ${escaparHtml(r.descripcion)}
         <br><br>
-        🕒 ${r.fecha}
+        🕒 ${escaparHtml(r.fecha)}
         <br><br>
-        <button onclick="validarReporte('${descEscapada}', ${r.lat}, ${r.lng})">
+        <button onclick="validarReporte('${descEscapada}', ${Number(r.lat)}, ${Number(r.lng)})">
           ✅ Ya no está
         </button>
       `);
@@ -510,9 +412,6 @@ async function cargarReportes(){
   }
 }
 
-// =======================
-// VALIDAR REPORTE
-// =======================
 async function validarReporte(descripcion, lat, lng){
   navigator.geolocation.getCurrentPosition(async pos => {
     const miLat = pos.coords.latitude;
@@ -531,7 +430,7 @@ async function validarReporte(descripcion, lat, lng){
     if(!confirmar) return;
 
     try {
-      const res = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify({
           accion: "eliminarReporte",
@@ -551,28 +450,18 @@ async function validarReporte(descripcion, lat, lng){
     }
   });
 }
-// =======================
-// CICLORUTAS
-// =======================
 
 async function mostrarCiclorutas(){
-
 if(capaCiclorutas){
-
 map.removeLayer(capaCiclorutas);
-
 capaCiclorutas = null;
-
 document.getElementById("estado")
 .innerHTML =
 "🚴 Ciclorutas ocultadas";
-
 return;
-
 }
 
 try{
-
 const res =
 await fetch(
 "ciclorutas.json?t=" + Date.now()
@@ -585,7 +474,6 @@ capaCiclorutas =
 L.layerGroup();
 
 rutas.forEach(ruta=>{
-
 const linea =
 L.polyline(
 ruta.coordenadas,
@@ -600,11 +488,11 @@ dashArray:"10,6"
 );
 
 linea.bindPopup(
-"🚴 " + ruta.nombre
+"🚴 " + escaparHtml(ruta.nombre)
 );
 
 linea.bindTooltip(
-"🚴 " + ruta.nombre,
+"🚴 " + escaparHtml(ruta.nombre),
 {
 permanent:false,
 direction:"top"
@@ -616,7 +504,6 @@ className:"glowRuta"
 });
 
 capaCiclorutas.addLayer(linea);
-
 });
 
 capaCiclorutas.addTo(map);
@@ -628,32 +515,20 @@ document.getElementById("estado")
 hablar("Ciclorutas cargadas");
 
 }catch(error){
-
 document.getElementById("estado")
 .innerHTML =
 "❌ Error cargando ciclorutas";
-
 console.error(error);
-
 }
-
 }
-
-// =======================
-// GUARDAR UBICACIÓN
-// =======================
 
 window.addEventListener(
 "beforeunload",
 ()=>{
-
 if(navigator.geolocation){
-
 navigator.geolocation.getCurrentPosition(
 async pos=>{
-
 try{
-
 await fetch(
 API_URL,
 {
@@ -666,26 +541,24 @@ lng:pos.coords.longitude
 })
 }
 );
-
 }catch(e){}
-
+}
+);
+}
 }
 );
 
+function escaparHtml(valor) {
+  const span = document.createElement("span");
+  span.textContent = String(valor || "");
+  return span.innerHTML;
 }
-
-}
-);
-
-// =======================
 
 cargarReportes();
 cargarNegocios();
 
 setInterval(cargarReportes, 10000);
 setInterval(cargarNegocios, 30000);
-
 </script>
-
 </body>
 </html>
