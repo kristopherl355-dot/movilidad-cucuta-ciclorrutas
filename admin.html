@@ -193,12 +193,8 @@ Registrar Negocio
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-
 const URL_SCRIPT_GOOGLE =
 "https://script.google.com/macros/s/AKfycbzmkjOOZhdBSPNM9eyAtPDH2UPTvNLXySMTI19Rv_Gr9wQNGh51HPfha0gAldg4zpNA/exec";
-
-
-// MAPA
 
 const mapa = L.map('mapa').setView([7.8939,-72.5078],13);
 
@@ -212,7 +208,6 @@ attribution:'© OpenStreetMap'
 let marcador;
 
 mapa.on('click', e => {
-
 const lat = e.latlng.lat;
 const lng = e.latlng.lng;
 
@@ -224,73 +219,50 @@ mapa.removeLayer(marcador);
 }
 
 marcador = L.marker([lat,lng]).addTo(mapa);
-
 });
-
-
-// AGREGAR NEGOCIO
 
 document.getElementById('form-negocio')
 .addEventListener('submit', async function(e){
-
 e.preventDefault();
 
 const datos = {
-
 accion:"agregarNegocio",
-
 nombre:
 document.getElementById('neg-nombre').value,
-
 tipo:
 document.getElementById('neg-categoria').value,
-
 telefono:"",
-
 lat:
 parseFloat(document.getElementById('neg-lat').value),
-
 lng:
 parseFloat(document.getElementById('neg-lng').value)
-
 };
 
 try{
-
 await fetch(URL_SCRIPT_GOOGLE,{
 method:"POST",
-mode:"no-cors",
 body:JSON.stringify(datos)
 });
 
 alert("Negocio agregado");
-
 this.reset();
-
 cargarNegocios();
 
 }catch(error){
-
 console.error(error);
-
 alert("Error al guardar");
-
 }
-
 });
 
-
-// CARGAR NEGOCIOS
-
 async function cargarNegocios(){
-
 try{
-
 const res =
-await fetch(URL_SCRIPT_GOOGLE + "?accion=negocios");
+await fetch(URL_SCRIPT_GOOGLE + "?accion=negocios&t=" + Date.now());
 
-const negocios =
+const payload =
 await res.json();
+
+const negocios = Array.isArray(payload) ? payload : (payload.data || []);
 
 const tabla =
 document.getElementById('tabla-negocios');
@@ -298,58 +270,41 @@ document.getElementById('tabla-negocios');
 tabla.innerHTML = "";
 
 negocios.forEach((neg,index)=>{
-
 const premium =
-neg.destacado==="VERDADERO";
+neg.destacado==="VERDADERO" ||
+neg.destacado === true;
 
 tabla.innerHTML += `
 <tr>
-
-<td>${neg.nombre}</td>
-
-<td>${neg.tipo}</td>
-
-<td>${neg.lat}, ${neg.lng}</td>
-
+<td>${escaparHtml(neg.nombre)}</td>
+<td>${escaparHtml(neg.tipo)}</td>
+<td>${Number(neg.lat).toFixed(6)}, ${Number(neg.lng).toFixed(6)}</td>
 <td>
 ${premium ? '<span class="badge">PREMIUM</span>' : ''}
 </td>
-
 <td>
-
 <button
 class="btn-danger"
-onclick="eliminarNegocio('${neg.nombre}')">
+onclick="eliminarNegocio('${String(neg.nombre).replace(/'/g,"\\'")}')">
 Eliminar
 </button>
-
 </td>
-
 </tr>
 `;
-
 });
 
 }catch(error){
-
 console.error(error);
-
 }
-
 }
-
-
-// ELIMINAR NEGOCIO
 
 async function eliminarNegocio(nombre){
-
 if(!confirm("¿Eliminar negocio?")){
 return;
 }
 
 await fetch(URL_SCRIPT_GOOGLE,{
 method:"POST",
-mode:"no-cors",
 body:JSON.stringify({
 accion:"eliminarNegocio",
 nombre:nombre
@@ -357,21 +312,17 @@ nombre:nombre
 });
 
 cargarNegocios();
-
 }
 
-
-// CARGAR REPORTES
-
 async function cargarReportes(){
-
 try{
-
 const res =
-await fetch(URL_SCRIPT_GOOGLE);
+await fetch(URL_SCRIPT_GOOGLE + "?t=" + Date.now());
 
-const reportes =
+const payload =
 await res.json();
+
+const reportes = Array.isArray(payload) ? payload : (payload.data || []);
 
 const tabla =
 document.getElementById('tabla-reportes');
@@ -379,81 +330,62 @@ document.getElementById('tabla-reportes');
 tabla.innerHTML = "";
 
 reportes.forEach((rep,index)=>{
-
 tabla.innerHTML += `
 <tr>
-
-<td>${rep.descripcion}</td>
-
-<td>${rep.lat}, ${rep.lng}</td>
-
+<td>${escaparHtml(rep.descripcion)}</td>
+<td>${Number(rep.lat).toFixed(6)}, ${Number(rep.lng).toFixed(6)}</td>
 <td>
-
 <button
 class="btn-danger"
 onclick="eliminarReporte(
-'${rep.descripcion.replace(/'/g,"\\'")}',
-${rep.lat},
-${rep.lng}
+ '${String(rep.descripcion).replace(/'/g,"\\'")}',
+${Number(rep.lat)},
+${Number(rep.lng)}
 )">
 Eliminar
 </button>
-
 </td>
-
 </tr>
 `;
-
 });
 
 }catch(error){
-
 console.error(error);
-
 }
-
 }
-
-
-// ELIMINAR REPORTE
 
 async function eliminarReporte(descripcion,lat,lng){
-
 if(!confirm("¿Eliminar reporte?")){
 return;
 }
 
 await fetch(URL_SCRIPT_GOOGLE,{
 method:"POST",
-mode:"no-cors",
 body:JSON.stringify({
-
 accion:"eliminarReporte",
 descripcion:descripcion,
 lat:lat,
 lng:lng
-
 })
 });
 
 cargarReportes();
-
 }
 
-
-// INICIO
+function escaparHtml(valor) {
+  const span = document.createElement("span");
+  span.textContent = String(valor || "");
+  return span.innerHTML;
+}
 
 window.onload = () => {
-
 cargarNegocios();
 cargarReportes();
 
 setTimeout(()=>{
 mapa.invalidateSize();
 },500);
-
 };
-
 </script>
 
 </body>
