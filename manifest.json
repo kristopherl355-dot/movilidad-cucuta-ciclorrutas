@@ -1,15 +1,16 @@
 {
-"name": "Movilidad Cúcuta",
-"short_name": "Movilidad",
-"start_url": "index.html",
-"display": "standalone",
-"background_color": "#ffffff",
-"theme_color": "#3498db",
-"icons": [
-{
-"src": "icon.png",
-"sizes": "192x192",
-"type": "image/png"
-}
-]
+  "name": "Movilidad Cúcuta",
+  "short_name": "Movilidad",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3498db",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
 }
