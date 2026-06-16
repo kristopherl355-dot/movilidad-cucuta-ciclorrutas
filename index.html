@@ -268,15 +268,26 @@ const iconoReporte = L.icon({
 });
 
 function obtenerIconoNegocio(tipo, premium){
-  // Usamos códigos Unicode estables o texto limpio para evitar errores de codificación
-  const simbolos = {
+  // Usamos enlaces de imágenes reales en lugar de emojis de texto propensos a romperse
+  const imagenes = {
     "Taller de Ciclismo": "🔧",
     "Tienda de Bicicletas": "🚲",
-    "Cafetería": "&#9749;", // Código HTML seguro para la taza de café (☕)
-    "Cafeteria": "&#9749;",  // Versión sin tilde por si acaso
+    "Cafetería": '<img src="https://cdn-icons-png.flaticon.com/512/3061/3061413.png" style="width:24px; height:24px; margin-top:2px;">',
+    "Cafeteria": '<img src="https://cdn-icons-png.flaticon.com/512/3061/3061413.png" style="width:24px; height:24px; margin-top:2px;">',
     "Parqueadero": "🅿️",
     "Otro": "🏪"
   };
+
+  let contenido = imagenes[tipo] || "🏪";
+
+  return L.divIcon({
+    className: "",
+    html: `<div class="icono-negocio ${premium ? "premium" : ""}">${contenido}${premium ? '<span class="estrella">⭐</span>' : ''}</div>`,
+    iconSize: [42, 42],
+    iconAnchor: [21, 42],
+    popupAnchor: [0, -42]
+  });
+}
 
   // Si es cafetería, usamos el código seguro, si no, el símbolo de la lista o una tienda por defecto
   let simbolo = simbolos[tipo] || "🏪";
