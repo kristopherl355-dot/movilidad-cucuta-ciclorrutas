@@ -194,7 +194,7 @@ Registrar Negocio
 
 <script>
 const URL_SCRIPT_GOOGLE =
-"https://script.google.com/macros/s/AKfycbwT0o8EhSZwba9J3WJIDkbYi3WiRGA-BG6-K1qUwKjOftmTSpHxKfu-WxMtENRD1dBz/exec";
+"https://script.google.com/macros/s/AKfycbzmkjOOZhdBSPNM9eyAtPDH2UPTvNLXySMTI19Rv_Gr9wQNGh51HPfha0gAldg4zpNA/exec";
 
 const mapa = L.map('mapa').setView([7.8939,-72.5078],13);
 
@@ -284,6 +284,11 @@ ${premium ? '<span class="badge">PREMIUM</span>' : ''}
 </td>
 <td>
 <button
+onclick="toggleDestacado('${String(neg.nombre).replace(/'/g,"\\'")}', ${!premium})">
+${premium ? 'Quitar Premium' : 'Destacar'}
+</button>
+
+<button
 class="btn-danger"
 onclick="eliminarNegocio('${String(neg.nombre).replace(/'/g,"\\'")}')">
 Eliminar
@@ -308,6 +313,19 @@ method:"POST",
 body:JSON.stringify({
 accion:"eliminarNegocio",
 nombre:nombre
+})
+});
+
+cargarNegocios();
+}
+
+async function toggleDestacado(nombre,destacado){
+await fetch(URL_SCRIPT_GOOGLE,{
+method:"POST",
+body:JSON.stringify({
+accion:"toggleDestacado",
+nombre:nombre,
+destacado:destacado
 })
 });
 
