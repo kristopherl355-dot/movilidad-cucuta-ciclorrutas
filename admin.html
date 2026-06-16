@@ -304,39 +304,31 @@ console.error(error);
 }
 
 async function eliminarNegocio(nombre){
-  if(!confirm("¿Seguro que deseas eliminar este negocio por completo?")){
+  if(!confirm("¿Seguro que deseas eliminar este negocio?")){
     return;
   }
 
   try {
-    // El .trim() borra espacios invisibles al inicio o final que rompen la búsqueda
-    await fetch(URL_SCRIPT_GOOGLE,{
-      method:"POST",
-      body:JSON.stringify({
-        accion:"eliminarNegocio",
-        nombre: String(nombre).trim() 
-      })
+    // Usamos URLSearchParams para evitar el bloqueo de red (CORS) de Google
+    const cuerpo = new URLSearchParams();
+    cuerpo.append("accion", "eliminarNegocio");
+    cuerpo.append("nombre", nombre);
+
+    const respuesta = await fetch(URL_SCRIPT_GOOGLE, {
+      method: "POST",
+      mode: "no-cors", // Le dice al navegador que no se bloquee por políticas de red
+      body: cuerpo
     });
 
-    alert("🗑️ Negocio eliminado con éxito de la base de datos.");
-    cargarNegocios(); // Recarga la tabla automáticamente para ver el cambio
+    alert("Petición de eliminación enviada con éxito");
+    
+    // Esperamos un segundo pequeño para que Sheets se actualice antes de recargar la tabla
+    setTimeout(cargarNegocios, 1000);
 
-  } catch(error) {
+  } catch (error) {
     console.error(error);
-    alert("❌ Error de red al intentar eliminar el negocio.");
+    alert("Hubo un fallo de red al intentar conectar con el servidor.");
   }
-}
-async function toggleDestacado(nombre,destacado){
-await fetch(URL_SCRIPT_GOOGLE,{
-method:"POST",
-body:JSON.stringify({
-accion:"toggleDestacado",
-nombre:nombre,
-destacado:destacado
-})
-});
-
-cargarNegocios();
 }
 
 async function cargarReportes(){
