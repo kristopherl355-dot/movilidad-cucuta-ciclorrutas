@@ -268,15 +268,39 @@ const iconoReporte = L.icon({
 });
 
 function obtenerIconoNegocio(tipo, premium){
-  // Usamos enlaces de imágenes reales en lugar de emojis de texto propensos a romperse
-  const imagenes = {
-    "Taller de Ciclismo": "🔧",
-    "Tienda de Bicicletas": "🚲",
-    "Cafetería": '<img src="https://cdn-icons-png.flaticon.com/512/3061/3061413.png" style="width:24px; height:24px; margin-top:2px;">',
-    "Cafeteria": '<img src="https://cdn-icons-png.flaticon.com/512/3061/3061413.png" style="width:24px; height:24px; margin-top:2px;">',
-    "Parqueadero": "🅿️",
-    "Otro": "🏪"
-  };
+  // 1. Definimos las URLs de las imágenes fijas de internet para cada categoría
+  let urlIcono = "https://cdn-icons-png.flaticon.com/512/123/123403.png"; // Tienda genérica por defecto
+
+  if (tipo === "Taller de Ciclismo") {
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/3258/3258544.png"; // Icono de Llave/Taller
+  } else if (tipo === "Tienda de Bicicletas") {
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/2972/2972185.png"; // Icono de Bicicleta
+  } else if (tipo === "Cafetería" || tipo === "Cafeteria") {
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/3061/3061413.png"; // Icono de Taza de Café puro
+  } else if (tipo === "Parqueadero") {
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/2983/2983774.png"; // Icono de Parqueadero (P)
+  }
+
+  // 2. Si el negocio es PREMIUM, usamos tu diseño circular blanco con la estrellita encima
+  if (premium) {
+    return L.divIcon({
+      className: "",
+      html: `<div class="icono-negocio premium"><img src="${urlIcono}" style="width:22px; height:22px; margin-top:2px;"><span class="estrella">⭐</span></div>`,
+      iconSize: [42, 42],
+      iconAnchor: [21, 42],
+      popupAnchor: [0, -42]
+    });
+  }
+
+  // 3. Si es un negocio normal, usamos el círculo azul estándar de tu interfaz
+  return L.divIcon({
+    className: "",
+    html: `<div class="icono-negocio"><img src="${urlIcono}" style="width:22px; height:22px; margin-top:2px;"></div>`,
+    iconSize: [42, 42],
+    iconAnchor: [21, 42],
+    popupAnchor: [0, -42]
+  });
+}
 
   let contenido = imagenes[tipo] || "🏪";
 
