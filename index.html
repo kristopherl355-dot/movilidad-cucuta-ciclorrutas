@@ -268,20 +268,18 @@ const iconoReporte = L.icon({
 });
 
 function obtenerIconoNegocio(tipo, premium){
-  // 1. Definimos las URLs de las imágenes fijas de internet para cada categoría
   let urlIcono = "https://cdn-icons-png.flaticon.com/512/123/123403.png"; // Tienda genérica por defecto
 
   if (tipo === "Taller de Ciclismo") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/3258/3258544.png"; // Icono de Llave/Taller
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/3258/3258544.png"; 
   } else if (tipo === "Tienda de Bicicletas") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/2972/2972185.png"; // Icono de Bicicleta
-  } else if (tipo === "Cafetería" || tipo === "Cafeteria") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/3061/3061413.png"; // Icono de Taza de Café puro
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/2972/2972185.png"; 
+  } else if (tipo === "Cafetería" || tipo === "Cafeteria" || tipo === "cafetería") {
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/3061/3061413.png"; // Imagen pura de la taza
   } else if (tipo === "Parqueadero") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/2983/2983774.png"; // Icono de Parqueadero (P)
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/2983/2983774.png"; 
   }
 
-  // 2. Si el negocio es PREMIUM, usamos tu diseño circular blanco con la estrellita encima
   if (premium) {
     return L.divIcon({
       className: "",
@@ -292,7 +290,6 @@ function obtenerIconoNegocio(tipo, premium){
     });
   }
 
-  // 3. Si es un negocio normal, usamos el círculo azul estándar de tu interfaz
   return L.divIcon({
     className: "",
     html: `<div class="icono-negocio"><img src="${urlIcono}" style="width:22px; height:22px; margin-top:2px;"></div>`,
@@ -301,39 +298,6 @@ function obtenerIconoNegocio(tipo, premium){
     popupAnchor: [0, -42]
   });
 }
-
-  let contenido = imagenes[tipo] || "🏪";
-
-  return L.divIcon({
-    className: "",
-    html: `<div class="icono-negocio ${premium ? "premium" : ""}">${contenido}${premium ? '<span class="estrella">⭐</span>' : ''}</div>`,
-    iconSize: [42, 42],
-    iconAnchor: [21, 42],
-    popupAnchor: [0, -42]
-  });
-}
-
-  // Si es cafetería, usamos el código seguro, si no, el símbolo de la lista o una tienda por defecto
-  let simbolo = simbolos[tipo] || "🏪";
-
-  return L.divIcon({
-    className: "",
-    html: `<div class="icono-negocio ${premium ? "premium" : ""}">${simbolo}${premium ? '<span class="estrella">⭐</span>' : ''}</div>`,
-    iconSize: [42, 42],
-    iconAnchor: [21, 42],
-    popupAnchor: [0, -42]
-  });
-}= simbolos[tipo] || "🏪";
-
-return L.divIcon({
-className:"",
-html:`<div class="icono-negocio ${premium ? "premium" : ""}">${simbolo}${premium ? '<span class="estrella">⭐</span>' : ''}</div>`,
-iconSize:[42,42],
-iconAnchor:[21,42],
-popupAnchor:[0,-42]
-});
-}
-
 function hablar(texto) {
   if (!("speechSynthesis" in window)) return;
 
