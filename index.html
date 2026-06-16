@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚴 Ciclorutas Cúcuta</title>
+<title>Ciclorutas Cucuta</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -142,7 +142,7 @@ font-size:14px;
 <body>
 
 <header>
-🚴 Ciclorutas Cúcuta
+🚴 Ciclorutas Cucuta
 </header>
 
 <div id="map"></div>
@@ -161,11 +161,11 @@ font-size:14px;
 
 <textarea id="descripcion" placeholder="Describe el problema..."></textarea>
 
-<button onclick="enviarReporte()">📍 Reportar</button>
-<button onclick="seguirUbicacion()">🧭 Seguir ubicación</button>
-<button onclick="mostrarCiclorutas()">🚴 Mostrar ciclorutas</button>
+<button onclick="enviarReporte()">📍 Reportar Problema</button>
+<button onclick="seguirUbicacion()">🧭 Seguir Ubicación</button>
+<button onclick="mostrarCiclorutas()">🚴 Mostrar Ciclorutas</button>
 <button onclick="alternarRutasGuardadas()">🗺️ Rutas de Usuarios</button> 
-<button onclick="cargarReportes()">📌 Mostrar reportes</button>
+<button onclick="cargarReportes()">📌 Mostrar Reportes</button>
 <div class="loader" id="loader"></div>
 <div id="estado"></div>
 
@@ -202,9 +202,9 @@ let reportes = [];
 let capaCiclorutas = null;
 let marcadoresNegocios = [];
 
-// === NUEVAS VARIABLES QUE AGREGAMOS AQUÍ ===
-let historialCoordenadas = []; // Almacena los puntos [lat, lng] de tu viaje actual
-let capaRutasGuardadas = null; // Controla la capa para mostrar u ocultar las rutas de la comunidad
+let historialCoordenadas = []; 
+let capaRutasGuardadas = null; 
+
 async function cargarNegocios(){
   marcadoresNegocios.forEach(m=>{
     map.removeLayer(m);
@@ -252,16 +252,19 @@ async function cargarNegocios(){
   }
 }
 
+// Configuración fija de imágenes completas para que Leaflet no las pierda
 const iconoUsuario = L.icon({
-iconUrl:
-"https://cdn-icons-png.flaticon.com/512/149/149060.png",
-iconSize:[38,38]
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png",
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -38]
 });
 
 const iconoReporte = L.icon({
-iconUrl:
-"https://cdn-icons-png.flaticon.com/512/684/684908.png",
-iconSize:[35,35]
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+  iconSize: [35, 35],
+  iconAnchor: [17, 35],
+  popupAnchor: [0, -35]
 });
 
 function obtenerIconoNegocio(tipo, premium){
@@ -288,49 +291,41 @@ popupAnchor:[0,-42]
 function hablar(texto) {
   if (!("speechSynthesis" in window)) return;
 
-  // Interrumpimos de inmediato cualquier indicación anterior de Google Maps
   speechSynthesis.cancel();
 
   const voz = new SpeechSynthesisUtterance(texto);
-  voz.lang = "es-CO"; // Configura el acento de Colombia
-  voz.pitch = 1.0;    // Tono normal de voz
-  voz.rate = 1.05;    // Velocidad fluida de asistente de navegación
+  voz.lang = "es-CO"; 
+  voz.pitch = 1.0;    
+  voz.rate = 1.05;    
 
   speechSynthesis.speak(voz);
 }
 
 function seguirUbicacion(){
   if(watchID){
-    // === EL SEGUIMIENTO SE DETIENE AQUÍ ===
     navigator.geolocation.clearWatch(watchID);
     watchID = null;
     document.getElementById("estado").innerHTML = "🛑 Seguimiento detenido";
     
-    // Voz estilo Google Maps al detenerse
     hablar("Seguimiento detenido. Modo libre activado.");
 
-    // Si acumulaste puntos en la lista durante el viaje, los mandamos a Google Sheets
     if(historialCoordenadas.length > 0){
       enviarRutaHistorial(historialCoordenadas);
     }
     return;
   }
 
-  // === EL SEGUIMIENTO INICIA AQUÍ ===
-  historialCoordenadas = []; // Limpiamos viajes anteriores para empezar uno nuevo
+  historialCoordenadas = []; 
   document.getElementById("estado").innerHTML = "🟢 Seguimiento activado";
   
-  // Voz estilo Google Maps al iniciar
   hablar("Iniciando seguimiento en tiempo real. Calculando posición del ciclista.");
 
   watchID = navigator.geolocation.watchPosition(pos=>{
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
 
-    // Guardamos la coordenada en nuestro array local en tiempo real
     historialCoordenadas.push([lat, lng]);
 
-    // Actualizamos el marcador del usuario en el mapa
     if(marcadorUsuario){
       marcadorUsuario.setLatLng([lat,lng]);
     } else {
@@ -338,7 +333,6 @@ function seguirUbicacion(){
     }
     map.setView([lat,lng], 16);
     
-    // Dibujamos la línea azul en vivo en la pantalla para que veas tu camino actual
     L.polyline(historialCoordenadas, {color: '#38bdf8', weight: 4}).addTo(map);
 
   }, error => {
@@ -350,8 +344,6 @@ function seguirUbicacion(){
   });
 }
 
-// === NUEVA FUNCIÓN COMPAÑERA ===
-// (Pégala justo aquí abajo de la función seguirUbicacion)
 async function enviarRutaHistorial(ruta) {
   try {
     const datos = {
@@ -589,7 +581,6 @@ console.error(error);
 async function alternarRutasGuardadas() {
   const estado = document.getElementById("estado");
 
-  // Si ya se están mostrando las rutas en pantalla, las quitamos (Modo Ocultar)
   if (capaRutasGuardadas) {
     map.removeLayer(capaRutasGuardadas);
     capaRutasGuardadas = null;
@@ -598,7 +589,6 @@ async function alternarRutasGuardadas() {
     return;
   }
 
-  // Si no se están mostrando, las descargamos de Google Sheets (Modo Mostrar)
   estado.innerHTML = "⏳ Cargando rutas de usuarios...";
   
   try {
@@ -617,7 +607,6 @@ async function alternarRutasGuardadas() {
     rutas.forEach(ruta => {
       if (!ruta.coordenadas || ruta.coordenadas.length < 2) return;
 
-      // Dibujamos las rutas en color morado para diferenciarlas de tus ciclorrutas fijas
       const linea = L.polyline(ruta.coordenadas, {
         color: "#a855f7", 
         weight: 5,
@@ -641,6 +630,7 @@ async function alternarRutasGuardadas() {
     capaRutasGuardadas = null;
   }
 }
+
 function escaparHtml(valor) {
   const span = document.createElement("span");
   span.textContent = String(valor || "");
