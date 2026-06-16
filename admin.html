@@ -304,21 +304,28 @@ console.error(error);
 }
 
 async function eliminarNegocio(nombre){
-if(!confirm("¿Eliminar negocio?")){
-return;
+  if(!confirm("¿Seguro que deseas eliminar este negocio por completo?")){
+    return;
+  }
+
+  try {
+    // El .trim() borra espacios invisibles al inicio o final que rompen la búsqueda
+    await fetch(URL_SCRIPT_GOOGLE,{
+      method:"POST",
+      body:JSON.stringify({
+        accion:"eliminarNegocio",
+        nombre: String(nombre).trim() 
+      })
+    });
+
+    alert("🗑️ Negocio eliminado con éxito de la base de datos.");
+    cargarNegocios(); // Recarga la tabla automáticamente para ver el cambio
+
+  } catch(error) {
+    console.error(error);
+    alert("❌ Error de red al intentar eliminar el negocio.");
+  }
 }
-
-await fetch(URL_SCRIPT_GOOGLE,{
-method:"POST",
-body:JSON.stringify({
-accion:"eliminarNegocio",
-nombre:nombre
-})
-});
-
-cargarNegocios();
-}
-
 async function toggleDestacado(nombre,destacado){
 await fetch(URL_SCRIPT_GOOGLE,{
 method:"POST",
