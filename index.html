@@ -164,8 +164,7 @@ font-size:14px;
 <button onclick="enviarReporte()">📍 Reportar</button>
 <button onclick="seguirUbicacion()">🧭 Seguir ubicación</button>
 <button onclick="mostrarCiclorutas()">🚴 Mostrar ciclorutas</button>
-<button onclick="cargarReportes()">📌 Mostrar reportes</button>
-
+<button onclick="alternarRutasGuardadas()">🗺️ Rutas de Usuarios</button> <button onclick="cargarReportes()">📌 Mostrar reportes</button>
 <div class="loader" id="loader"></div>
 <div id="estado"></div>
 
@@ -174,7 +173,7 @@ font-size:14px;
 
 <script>
 const API_URL =
-"https://script.google.com/macros/s/AKfycbyINrSlzK1ttRmvgXUhAFXxmkY8txPvHXBodLtKZbibNP4pYW56f1D6YuC4gTCahojB/exec";
+"https://script.google.com/macros/s/AKfycbzk-CMLrUNBS_mHUMBnE8pUAa7NFzvI-WaiWnJ43nljQMCPcSkV58mqkOLy8DMeSv3C/exec";
 
 if ("serviceWorker" in navigator) {
 navigator.serviceWorker.register("sw.js").catch(console.error);
@@ -202,6 +201,9 @@ let reportes = [];
 let capaCiclorutas = null;
 let marcadoresNegocios = [];
 
+// === NUEVAS VARIABLES QUE AGREGAMOS AQUÍ ===
+let historialCoordenadas = []; // Almacena los puntos [lat, lng] de tu viaje actual
+let capaRutasGuardadas = null; // Controla la capa para mostrar u ocultar las rutas de la comunidad
 async function cargarNegocios(){
   marcadoresNegocios.forEach(m=>{
     map.removeLayer(m);
@@ -282,67 +284,91 @@ popupAnchor:[0,-42]
 });
 }
 
-function hablar(texto){
-if(!("speechSynthesis" in window)) return;
-const voz =
-new SpeechSynthesisUtterance(texto);
-voz.lang = "es-ES";
-speechSynthesis.speak(voz);
+function hablar(texto) {
+  if (!("speechSynthesis" in window)) return;
+
+  // Interrumpimos de inmediato cualquier indicación anterior de Google Maps
+  speechSynthesis.cancel();
+
+  const voz = new SpeechSynthesisUtterance(texto);
+  voz.lang = "es-CO"; // Configura el acento de Colombia
+  voz.pitch = 1.0;    // Tono normal de voz
+  voz.rate = 1.05;    // Velocidad fluida de asistente de navegación
+
+  speechSynthesis.speak(voz);
 }
-
-navigator.geolocation.getCurrentPosition(pos=>{
-const lat = pos.coords.latitude;
-const lng = pos.coords.longitude;
-
-map.setView([lat,lng],15);
-
-marcadorUsuario =
-L.marker(
-[lat,lng],
-{
-icon:iconoUsuario
-}
-)
-.addTo(map)
-.bindPopup("📍 Tu ubicación");
-});
 
 function seguirUbicacion(){
-if(watchID){
-navigator.geolocation.clearWatch(watchID);
-watchID = null;
-document.getElementById("estado")
-.innerHTML =
-"🛑 Seguimiento detenido";
-hablar("Seguimiento detenido");
-return;
+  if(watchID){
+    // === EL SEGUIMIENTO SE DETIENE AQUÍ ===
+    navigator.geolocation.clearWatch(watchID);
+    watchID = null;
+    document.getElementById("estado").innerHTML = "🛑 Seguimiento detenido";
+    
+    // Voz estilo Google Maps al detenerse
+    hablar("Seguimiento detenido. Modo libre activado.");
+
+    // Si acumulaste puntos en la lista durante el viaje, los mandamos a Google Sheets
+    if(historialCoordenadas.length > 0){
+      enviarRutaHistorial(historialCoordenadas);
+    }
+    return;
+  }
+
+  // === EL SEGUIMIENTO INICIA AQUÍ ===
+  historialCoordenadas = []; // Limpiamos viajes anteriores para empezar uno nuevo
+  document.getElementById("estado").innerHTML = "🟢 Seguimiento activado";
+  
+  // Voz estilo Google Maps al iniciar
+  hablar("Iniciando seguimiento en tiempo real. Calculando posición del ciclista.");
+
+  watchID = navigator.geolocation.watchPosition(pos=>{
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+
+    // Guardamos la coordenada en nuestro array local en tiempo real
+    historialCoordenadas.push([lat, lng]);
+
+    // Actualizamos el marcador del usuario en el mapa
+    if(marcadorUsuario){
+      marcadorUsuario.setLatLng([lat,lng]);
+    } else {
+      marcadorUsuario = L.marker([lat,lng], {icon:iconoUsuario}).addTo(map);
+    }
+    map.setView([lat,lng], 16);
+    
+    // Dibujamos la línea azul en vivo en la pantalla para que veas tu camino actual
+    L.polyline(historialCoordenadas, {color: '#38bdf8', weight: 4}).addTo(map);
+
+  }, error => {
+    console.error(error);
+  }, {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+  });
 }
 
-watchID =
-navigator.geolocation.watchPosition(pos=>{
-const lat = pos.coords.latitude;
-const lng = pos.coords.longitude;
+// === NUEVA FUNCIÓN COMPAÑERA ===
+// (Pégala justo aquí abajo de la función seguirUbicacion)
+async function enviarRutaHistorial(ruta) {
+  try {
+    const datos = {
+      accion: "guardarRuta",
+      coordenadas: JSON.stringify(ruta), 
+      fecha: new Date().toISOString()
+    };
 
-if(marcadorUsuario){
-marcadorUsuario.setLatLng([lat,lng]);
-}else{
-marcadorUsuario =
-L.marker(
-[lat,lng],
-{
-icon:iconoUsuario
-}
-)
-.addTo(map);
-}
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(datos)
+    });
 
-map.setView([lat,lng],16);
-});
-
-document.getElementById("estado")
-.innerHTML =
-"🟢 Seguimiento activado";
-hablar("Seguimiento activado");
+    console.log("Ruta del viaje guardada con éxito.");
+    hablar("Recorrido finalizado. Ruta publicada con éxito en la plataforma.");
+  } catch (error) {
+    console.error("Error al guardar la ruta:", error);
+  }
 }
 
 async function enviarReporte(){
@@ -558,32 +584,62 @@ console.error(error);
 }
 }
 
-window.addEventListener(
-"beforeunload",
-()=>{
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(
-async pos=>{
-try{
-await fetch(
-API_URL,
-{
-method:"POST",
-body:JSON.stringify({
-tipo:"📍 Seguimiento",
-descripcion:"Última ubicación guardada",
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-})
-}
-);
-}catch(e){}
-}
-);
-}
-}
-);
 
+async function alternarRutasGuardadas() {
+  const estado = document.getElementById("estado");
+
+  // Si ya se están mostrando las rutas en pantalla, las quitamos (Modo Ocultar)
+  if (capaRutasGuardadas) {
+    map.removeLayer(capaRutasGuardadas);
+    capaRutasGuardadas = null;
+    estado.innerHTML = "🗺️ Rutas de usuarios ocultadas";
+    hablar("Capa de rutas históricas removida del mapa.");
+    return;
+  }
+
+  // Si no se están mostrando, las descargamos de Google Sheets (Modo Mostrar)
+  estado.innerHTML = "⏳ Cargando rutas de usuarios...";
+  
+  try {
+    const res = await fetch(API_URL + "?accion=obtenerRutas&t=" + Date.now());
+    const rutas = await res.json();
+
+    capaRutasGuardadas = L.layerGroup();
+
+    if (rutas.length === 0) {
+      estado.innerHTML = "📭 No hay rutas guardadas aún";
+      capaRutasGuardadas = null;
+      hablar("No se encontraron recorridos guardados en la base de datos.");
+      return;
+    }
+
+    rutas.forEach(ruta => {
+      if (!ruta.coordenadas || ruta.coordenadas.length < 2) return;
+
+      // Dibujamos las rutas en color morado para diferenciarlas de tus ciclorrutas fijas
+      const linea = L.polyline(ruta.coordenadas, {
+        color: "#a855f7", 
+        weight: 5,
+        opacity: 0.7,
+        lineCap: "round"
+      });
+
+      const fechaFormateada = new Date(ruta.fecha).toLocaleString("es-CO");
+      linea.bindPopup(`⏱️ <b>Recorrido de usuario</b><br>Registrado el: ${fechaFormateada}`);
+
+      capaRutasGuardadas.addLayer(linea);
+    });
+
+    capaRutasGuardadas.addTo(map);
+    estado.innerHTML = "🗺️ Rutas de usuarios cargadas";
+    hablar("Rutas de la comunidad cargadas. Mostrando recorridos frecuentes.");
+
+  } catch (error) {
+    console.error(error);
+    estado.innerHTML = "❌ Error cargando rutas viales";
+    capaRutasGuardadas = null;
+  }
+}
 function escaparHtml(valor) {
   const span = document.createElement("span");
   span.textContent = String(valor || "");
