@@ -37,7 +37,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-if (url.origin === location.origin && event.request.method === "GET") {
+  if (url.origin === location.origin && event.request.method === "GET") {
     event.respondWith(
       fetch(event.request)
         .then(networkRes => {
