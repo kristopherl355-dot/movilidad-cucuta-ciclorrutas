@@ -37,12 +37,14 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-if (url.origin === location.origin) {
+if (url.origin === location.origin && event.request.method === "GET") {
     event.respondWith(
       fetch(event.request)
         .then(networkRes => {
-          const resClone = networkRes.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
+          if (networkRes && networkRes.status === 200) {
+            const resClone = networkRes.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
+          }
           return networkRes;
         })
         .catch(() => caches.match(event.request, { ignoreSearch: true }))
