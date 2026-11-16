@@ -246,8 +246,11 @@ body:JSON.stringify(datos)
 
 alert("Negocio agregado");
 this.reset();
+if (marcador) {
+  mapa.removeLayer(marcador);
+  marcador = null;
+}
 cargarNegocios();
-
 }catch(error){
 console.error(error);
 alert("Error al guardar");
@@ -303,28 +306,52 @@ console.error(error);
 }
 }
 
-async function eliminarNegocio(nombre){
-  if(!confirm("¿Seguro que deseas eliminar este negocio?")){
+async function toggleDestacado(nombre, nuevoEstado) {
+  try {
+    const res = await fetch(URL_SCRIPT_GOOGLE, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        accion: "toggleDestacado",
+        nombre: nombre,
+        destacado: nuevoEstado
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      cargarNegocios();
+    } else {
+      alert("No se pudo actualizar el estado Premium");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error de red al cambiar estado Premium");
+  }
+}
+
+async function eliminarNegocio(nombre) {
+  if (!confirm("¿Seguro que deseas eliminar este negocio?")) {
     return;
   }
 
   try {
-    // Usamos URLSearchParams para evitar el bloqueo de red (CORS) de Google
-    const cuerpo = new URLSearchParams();
-    cuerpo.append("accion", "eliminarNegocio");
-    cuerpo.append("nombre", nombre);
-
-    const respuesta = await fetch(URL_SCRIPT_GOOGLE, {
+    const res = await fetch(URL_SCRIPT_GOOGLE, {
       method: "POST",
-      mode: "no-cors", // Le dice al navegador que no se bloquee por políticas de red
-      body: cuerpo
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        accion: "eliminarNegocio",
+        nombre: nombre
+      })
     });
 
-    alert("Petición de eliminación enviada con éxito");
-    
-    // Esperamos un segundo pequeño para que Sheets se actualice antes de recargar la tabla
-    setTimeout(cargarNegocios, 1000);
-
+    const data = await res.json();
+    if (data.status === "success") {
+      alert("Negocio eliminado correctamente");
+      cargarNegocios();
+    } else {
+      alert("No se pudo eliminar el negocio");
+    }
   } catch (error) {
     console.error(error);
     alert("Hubo un fallo de red al intentar conectar con el servidor.");
@@ -346,24 +373,18 @@ document.getElementById('tabla-reportes');
 
 tabla.innerHTML = "";
 
-reportes.forEach((rep,index)=>{
-tabla.innerHTML += `
-<tr>
-<td>${escaparHtml(rep.descripcion)}</td>
-<td>${Number(rep.lat).toFixed(6)}, ${Number(rep.lng).toFixed(6)}</td>
-<td>
-<button
-class="btn-danger"
-onclick="eliminarReporte(
- '${String(rep.descripcion).replace(/'/g,"\\'")}',
-${Number(rep.lat)},
-${Number(rep.lng)}
-)">
-Eliminar
-</button>
-</td>
-</tr>
-`;
+reportes.forEach((rep) => {
+  tabla.innerHTML += `
+  <tr>
+    <td>${escaparHtml(rep.descripcion)}</td>
+    <td>${Number(rep.lat).toFixed(6)}, ${Number(rep.lng).toFixed(6)}</td>
+    <td>
+      <button class="btn-danger" onclick="eliminarReporte(${Number(rep.id)})">
+        Eliminar
+      </button>
+    </td>
+  </tr>
+  `;
 });
 
 }catch(error){
