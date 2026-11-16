@@ -206,7 +206,7 @@ attribution:'© OpenStreetMap'
 ).addTo(mapa);
 
 let marcador;
-
+let marcadoresNegocios = [];
 mapa.on('click', e => {
 const lat = e.latlng.lat;
 const lng = e.latlng.lng;
@@ -267,15 +267,23 @@ await res.json();
 
 const negocios = Array.isArray(payload) ? payload : (payload.data || []);
 
-const tabla =
-document.getElementById('tabla-negocios');
-
+const tabla = document.getElementById('tabla-negocios');
 tabla.innerHTML = "";
 
-negocios.forEach((neg,index)=>{
-const premium =
-neg.destacado==="VERDADERO" ||
-neg.destacado === true;
+marcadoresNegocios.forEach(m => mapa.removeLayer(m));
+marcadoresNegocios = [];
+
+negocios.forEach((neg) => {
+  const premium =
+    neg.destacado === "VERDADERO" ||
+    neg.destacado === true;
+
+  if (neg.lat && neg.lng) {
+    const pin = L.marker([Number(neg.lat), Number(neg.lng)])
+      .addTo(mapa)
+      .bindPopup(`<b>${escaparHtml(neg.nombre)}</b><br>${escaparHtml(neg.tipo)}${premium ? '<br>⭐ PREMIUM' : ''}`);
+    marcadoresNegocios.push(pin);
+  }
 
 tabla.innerHTML += `
 <tr>
