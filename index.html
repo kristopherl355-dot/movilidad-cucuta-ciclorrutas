@@ -10,131 +10,132 @@
 
 <style>
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
 body{
-background:#0f172a;
-color:white;
+  background:#0f172a;
+  color:white;
 }
 
 header{
-background:linear-gradient(90deg,#0ea5e9,#2563eb);
-padding:18px;
-text-align:center;
-font-size:28px;
-font-weight:bold;
-color:white;
-box-shadow:0 0 15px rgba(14,165,233,0.5);
+  background:linear-gradient(90deg,#0ea5e9,#2563eb);
+  padding:18px;
+  text-align:center;
+  font-size:28px;
+  font-weight:bold;
+  color:white;
+  box-shadow:0 0 15px rgba(14,165,233,0.5);
 }
 
 #map{
-height:55vh;
-width:100%;
-border-bottom:4px solid #38bdf8;
+  height:55vh;
+  width:100%;
+  border-bottom:4px solid #38bdf8;
 }
 
 .panel{
-padding:15px;
+  padding:15px;
 }
 
 .card{
-background:#1e293b;
-padding:15px;
-border-radius:15px;
-margin-bottom:15px;
-box-shadow:0 0 10px rgba(0,0,0,0.3);
+  background:#1e293b;
+  padding:15px;
+  border-radius:15px;
+  margin-bottom:15px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
 }
 
 select,
 textarea{
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:12px;
-background:#334155;
-color:white;
-font-size:16px;
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  background:#334155;
+  color:white;
+  font-size:16px;
 }
 
 textarea{
-resize:none;
-height:90px;
+  resize:none;
+  height:90px;
 }
 
 button{
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:12px;
-font-size:16px;
-font-weight:bold;
-cursor:pointer;
-background:linear-gradient(90deg,#38bdf8,#0ea5e9);
-color:white;
-transition:0.3s;
-box-shadow:0 0 15px rgba(56,189,248,0.4);
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  background:linear-gradient(90deg,#38bdf8,#0ea5e9);
+  color:white;
+  transition:0.3s;
+  box-shadow:0 0 15px rgba(56,189,248,0.4);
 }
 
 button:hover{
-transform:scale(1.02);
+  transform:scale(1.02);
 }
 
 #estado{
-margin-top:12px;
-text-align:center;
-font-weight:bold;
+  margin-top:12px;
+  text-align:center;
+  font-weight:bold;
 }
 
 .loader{
-display:none;
-margin:auto;
-margin-top:15px;
-border:5px solid #1e293b;
-border-top:5px solid #38bdf8;
-border-radius:50%;
-width:45px;
-height:45px;
-animation:girar 1s linear infinite;
+  display:none;
+  margin:auto;
+  margin-top:15px;
+  border:5px solid #1e293b;
+  border-top:5px solid #38bdf8;
+  border-radius:50%;
+  width:45px;
+  height:45px;
+  animation:girar 1s linear infinite;
 }
 
 @keyframes girar{
-100%{
-transform:rotate(360deg);
+  100%{
+    transform:rotate(360deg);
+  }
 }
-}
- .glowRuta{
-filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
+
+.glowRuta{
+  filter:drop-shadow(0 0 6px rgba(255,255,255,0.7));
 }
 
 .icono-negocio{
-width:42px;
-height:42px;
-border-radius:50%;
-background:#ffffff;
-border:3px solid #0ea5e9;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:22px;
-box-shadow:0 2px 10px rgba(0,0,0,0.35);
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#ffffff;
+  border:3px solid #0ea5e9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.35);
 }
 
 .icono-negocio.premium{
-border-color:#facc15;
-box-shadow:0 0 14px rgba(250,204,21,0.85);
+  border-color:#facc15;
+  box-shadow:0 0 14px rgba(250,204,21,0.85);
 }
 
 .icono-negocio .estrella{
-position:absolute;
-margin-left:28px;
-margin-top:-30px;
-font-size:14px;
+  position:absolute;
+  margin-left:28px;
+  margin-top:-30px;
+  font-size:14px;
 }
 </style>
 </head>
@@ -174,27 +175,21 @@ font-size:14px;
 
 <script>
 const API_URL =
-"https://script.google.com/macros/s/AKfycbzVbBo-TtryWotrXorjaj1HN9iyn60f6MLFfD9QS8FiSH0xW5ZvV-Xncoa1NnKDoVXm/exec";
+"https://script.google.com/macros/s/AKfycbzmivZckZkSMAdbaXHsFv9hCqLzP_kQuv5zby-NYrUOqsPouZR1RjyrjG2wDfdqnTHU/exec";
 
 if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("sw.js").catch(console.error);
+  navigator.serviceWorker.register("sw.js").catch(console.error);
 }
 
-let map = L.map("map").setView(
-[7.8891,-72.4967],
-13
-);
+let map = L.map("map").setView([7.8891, -72.4967], 13);
 
-setTimeout(()=>{
-map.invalidateSize();
-},500);
+setTimeout(() => {
+  map.invalidateSize();
+}, 500);
 
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-attribution:"© OpenStreetMap"
-}
-).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
 
 let marcadorUsuario = null;
 let watchID = null;
@@ -202,37 +197,37 @@ let reportes = [];
 let capaCiclorutas = null;
 let marcadoresNegocios = [];
 
-let historialCoordenadas = []; 
-let capaRutasGuardadas = null; 
+let historialCoordenadas = [];
+let lineaRecorridoActual = null; // Capa única para el recorrido en vivo
+let capaRutasGuardadas = null;
 
-async function cargarNegocios(){
-  marcadoresNegocios.forEach(m=>{
-    map.removeLayer(m);
+// Función estandarizada para peticiones POST a Google Apps Script sin bloqueos CORS
+async function enviarPost(payload) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
   });
+  return await res.json();
+}
 
+async function cargarNegocios() {
+  marcadoresNegocios.forEach(m => map.removeLayer(m));
   marcadoresNegocios = [];
 
-  try{
-    const res = await fetch(
-      API_URL + "?accion=negocios&t=" + Date.now()
-    );
-
+  try {
+    const res = await fetch(API_URL + "?accion=negocios&t=" + Date.now());
     const payload = await res.json();
     const negocios = Array.isArray(payload) ? payload : (payload.data || []);
 
-    negocios.forEach(n=>{
-      if(!n.lat || !n.lng) return;
+    negocios.forEach(n => {
+      if (!n.lat || !n.lng) return;
 
-      const premium =
-        n.destacado === "VERDADERO" ||
-        n.destacado === true;
+      const premium = n.destacado === "VERDADERO" || n.destacado === true;
 
-      const marker = L.marker(
-        [Number(n.lat), Number(n.lng)],
-        {
-          icon: obtenerIconoNegocio(n.tipo, premium)
-        }
-      ).addTo(map);
+      const marker = L.marker([Number(n.lat), Number(n.lng)], {
+        icon: obtenerIconoNegocio(n.tipo, premium)
+      }).addTo(map);
 
       marker.bindPopup(`
         <b>${premium ? '⭐ NEGOCIO PREMIUM' : '🏪 NEGOCIO'}</b>
@@ -246,13 +241,11 @@ async function cargarNegocios(){
 
       marcadoresNegocios.push(marker);
     });
-
-  }catch(error){
+  } catch (error) {
     console.error(error);
   }
 }
 
-// Configuración fija de imágenes completas para que Leaflet no las pierda
 const iconoUsuario = L.icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png",
   iconSize: [38, 38],
@@ -267,17 +260,17 @@ const iconoReporte = L.icon({
   popupAnchor: [0, -35]
 });
 
-function obtenerIconoNegocio(tipo, premium){
-  let urlIcono = "https://cdn-icons-png.flaticon.com/512/123/123403.png"; // Tienda genérica por defecto
+function obtenerIconoNegocio(tipo, premium) {
+  let urlIcono = "https://cdn-icons-png.flaticon.com/512/123/123403.png";
 
   if (tipo === "Taller de Ciclismo") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/3258/3258544.png"; 
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/3258/3258544.png";
   } else if (tipo === "Tienda de Bicicletas") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/2972/2972185.png"; 
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/2972/2972185.png";
   } else if (tipo === "Cafetería" || tipo === "Cafeteria" || tipo === "cafetería") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/3061/3061413.png"; // Imagen pura de la taza
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/3061/3061413.png";
   } else if (tipo === "Parqueadero") {
-    urlIcono = "https://cdn-icons-png.flaticon.com/512/2983/2983774.png"; 
+    urlIcono = "https://cdn-icons-png.flaticon.com/512/2983/2983774.png";
   }
 
   if (premium) {
@@ -298,55 +291,62 @@ function obtenerIconoNegocio(tipo, premium){
     popupAnchor: [0, -42]
   });
 }
+
 function hablar(texto) {
   if (!("speechSynthesis" in window)) return;
-
   speechSynthesis.cancel();
-
   const voz = new SpeechSynthesisUtterance(texto);
-  voz.lang = "es-CO"; 
-  voz.pitch = 1.0;    
-  voz.rate = 1.05;    
-
+  voz.lang = "es-CO";
+  voz.pitch = 1.0;
+  voz.rate = 1.05;
   speechSynthesis.speak(voz);
 }
 
-function seguirUbicacion(){
-  if(watchID){
+function seguirUbicacion() {
+  if (watchID) {
     navigator.geolocation.clearWatch(watchID);
     watchID = null;
     document.getElementById("estado").innerHTML = "🛑 Seguimiento detenido";
-    
     hablar("Seguimiento detenido. Modo libre activado.");
 
-    if(historialCoordenadas.length > 0){
+    if (historialCoordenadas.length > 1) {
       enviarRutaHistorial(historialCoordenadas);
+    }
+
+    if (lineaRecorridoActual) {
+      map.removeLayer(lineaRecorridoActual);
+      lineaRecorridoActual = null;
     }
     return;
   }
 
-  historialCoordenadas = []; 
+  historialCoordenadas = [];
   document.getElementById("estado").innerHTML = "🟢 Seguimiento activado";
-  
   hablar("Iniciando seguimiento en tiempo real. Calculando posición del ciclista.");
 
-  watchID = navigator.geolocation.watchPosition(pos=>{
+  watchID = navigator.geolocation.watchPosition(pos => {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
 
     historialCoordenadas.push([lat, lng]);
 
-    if(marcadorUsuario){
-      marcadorUsuario.setLatLng([lat,lng]);
+    if (marcadorUsuario) {
+      marcadorUsuario.setLatLng([lat, lng]);
     } else {
-      marcadorUsuario = L.marker([lat,lng], {icon:iconoUsuario}).addTo(map);
+      marcadorUsuario = L.marker([lat, lng], { icon: iconoUsuario }).addTo(map);
     }
-    map.setView([lat,lng], 16);
-    
-    L.polyline(historialCoordenadas, {color: '#38bdf8', weight: 4}).addTo(map);
+    map.setView([lat, lng], 16);
+
+    // Actualizar la misma polilínea en vez de crear capas infinitas
+    if (!lineaRecorridoActual) {
+      lineaRecorridoActual = L.polyline(historialCoordenadas, { color: '#38bdf8', weight: 4 }).addTo(map);
+    } else {
+      lineaRecorridoActual.setLatLngs(historialCoordenadas);
+    }
 
   }, error => {
     console.error(error);
+    document.getElementById("estado").innerHTML = "⚠️ Error obteniendo ubicación GPS";
   }, {
     enableHighAccuracy: true,
     timeout: 5000,
@@ -356,89 +356,72 @@ function seguirUbicacion(){
 
 async function enviarRutaHistorial(ruta) {
   try {
-    const datos = {
+    const data = await enviarPost({
       accion: "guardarRuta",
-      coordenadas: JSON.stringify(ruta), 
+      coordenadas: JSON.stringify(ruta),
       fecha: new Date().toISOString()
-    };
-
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(datos)
     });
 
-    console.log("Ruta del viaje guardada con éxito.");
-    hablar("Recorrido finalizado. Ruta publicada con éxito en la plataforma.");
+    if (data.status === "success") {
+      console.log("Ruta del viaje guardada con éxito.");
+      hablar("Recorrido finalizado. Ruta publicada con éxito en la plataforma.");
+    }
   } catch (error) {
     console.error("Error al guardar la ruta:", error);
   }
 }
 
-async function enviarReporte(){
-const tipo =
-document.getElementById("tipo").value;
+async function enviarReporte() {
+  const tipo = document.getElementById("tipo").value;
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const estado = document.getElementById("estado");
+  const loader = document.getElementById("loader");
 
-const descripcion =
-document.getElementById("descripcion").value;
+  if (!tipo || descripcion.length < 5) {
+    estado.innerHTML = "⚠️ Selecciona un tipo y describe mejor el reporte";
+    hablar("Selecciona un tipo y describe mejor el reporte");
+    return;
+  }
 
-const estado =
-document.getElementById("estado");
+  loader.style.display = "block";
 
-const loader =
-document.getElementById("loader");
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const datos = {
+      accion: "crearReporte", // <--- Sincronizado con Code.gs
+      tipo,
+      descripcion,
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    };
 
-if(!tipo || descripcion.length < 5){
-estado.innerHTML =
-"⚠️ Describe mejor el reporte";
-hablar("Describe mejor el reporte");
-return;
+    try {
+      const data = await enviarPost(datos);
+
+      if (data.status === "success") {
+        estado.innerHTML = "✅ " + data.message;
+        hablar(data.message);
+        document.getElementById("descripcion").value = "";
+        cargarReportes();
+      } else {
+        estado.innerHTML = "⚠️ " + (data.message || "No se pudo guardar el reporte");
+        hablar(data.message || "No se pudo guardar el reporte");
+      }
+    } catch (error) {
+      estado.innerHTML = "❌ Error enviando reporte";
+      hablar("Error enviando reporte");
+    } finally {
+      loader.style.display = "none";
+    }
+  }, error => {
+    loader.style.display = "none";
+    estado.innerHTML = "⚠️ Activa el GPS para enviar un reporte";
+    hablar("Activa el GPS para enviar un reporte");
+  });
 }
 
-loader.style.display = "block";
-
-navigator.geolocation.getCurrentPosition(async pos=>{
-const datos = {
-tipo,
-descripcion,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-};
-
-try{
-const res =
-await fetch(
-API_URL,
-{
-method:"POST",
-body:JSON.stringify(datos)
-}
-);
-
-const txt =
-await res.text();
-
-estado.innerHTML = txt;
-hablar(txt);
-document.getElementById(
-"descripcion"
-).value = "";
-cargarReportes();
-
-}catch(error){
-estado.innerHTML =
-"❌ Error enviando reporte";
-hablar("Error enviando reporte");
-}
-
-loader.style.display = "none";
-});
-}
-
-async function cargarReportes(){
+async function cargarReportes() {
   try {
-    reportes.forEach(r => {
-      map.removeLayer(r);
-    });
+    reportes.forEach(r => map.removeLayer(r));
     reportes = [];
 
     const res = await fetch(API_URL + "?t=" + Date.now());
@@ -446,15 +429,13 @@ async function cargarReportes(){
     const datos = Array.isArray(payload) ? payload : (payload.data || []);
 
     datos.forEach(r => {
-      if(!r.lat || !r.lng) return;
+      if (!r.lat || !r.lng) return;
 
-      const marker = L.marker(
-        [Number(r.lat), Number(r.lng)],
-        { icon: iconoReporte }
-      ).addTo(map);
+      const marker = L.marker([Number(r.lat), Number(r.lng)], {
+        icon: iconoReporte
+      }).addTo(map);
 
-      const descEscapada = String(r.descripcion || "").replace(/'/g, "\\'");
-      
+      // Se pasa r.id directamente para que coincida con eliminarReporte en Code.gs
       marker.bindPopup(`
         <b>${escaparHtml(r.tipo)}</b>
         <br><br>
@@ -462,7 +443,7 @@ async function cargarReportes(){
         <br><br>
         🕒 ${escaparHtml(r.fecha)}
         <br><br>
-        <button onclick="validarReporte('${descEscapada}', ${Number(r.lat)}, ${Number(r.lng)})">
+        <button onclick="validarReporte(${Number(r.id)}, ${Number(r.lat)}, ${Number(r.lng)})">
           ✅ Ya no está
         </button>
       `);
@@ -471,122 +452,92 @@ async function cargarReportes(){
     });
 
     document.getElementById("estado").innerHTML = "✅ Reportes cargados";
-  } catch(error) {
+  } catch (error) {
     document.getElementById("estado").innerHTML = "❌ Error cargando reportes";
     console.error(error);
   }
 }
 
-async function validarReporte(descripcion, lat, lng){
+async function validarReporte(idReporte, lat, lng) {
   navigator.geolocation.getCurrentPosition(async pos => {
     const miLat = pos.coords.latitude;
     const miLng = pos.coords.longitude;
 
-    const distancia = Math.sqrt(
-      Math.pow(miLat - lat, 2) + Math.pow(miLng - lng, 2)
-    );
+    // Distancia geodésica real en metros (máximo 200 metros)
+    const distanciaMetros = map.distance([miLat, miLng], [lat, lng]);
 
-    if(distancia > 0.002){
-      alert("⚠️ Debes estar cerca del reporte");
+    if (distanciaMetros > 200) {
+      alert("⚠️ Debes estar a menos de 200 metros del reporte para validarlo");
       return;
     }
 
     const confirmar = confirm("¿Confirmas que el problema ya no existe?");
-    if(!confirmar) return;
+    if (!confirmar) return;
 
     try {
-      await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          accion: "eliminarReporte",
-          descripcion: descripcion,
-          lat: lat,
-          lng: lng
-        })
+      const data = await enviarPost({
+        accion: "eliminarReporte",
+        id: idReporte // <--- Sincronizado con Code.gs
       });
 
-      alert("✅ Reporte procesado correctamente");
-      hablar("Reporte eliminado");
-      cargarReportes();
-
-    } catch(error) {
+      if (data.status === "success") {
+        alert("✅ Reporte eliminado correctamente");
+        hablar("Reporte eliminado");
+        cargarReportes();
+      } else {
+        alert("⚠️ " + (data.message || "No se pudo eliminar el reporte"));
+      }
+    } catch (error) {
       alert("❌ Error eliminando reporte");
       console.error(error);
     }
+  }, () => {
+    alert("⚠️ Necesitas activar el GPS para confirmar que estás cerca del reporte.");
   });
 }
 
-async function mostrarCiclorutas(){
-if(capaCiclorutas){
-map.removeLayer(capaCiclorutas);
-capaCiclorutas = null;
-document.getElementById("estado")
-.innerHTML =
-"🚴 Ciclorutas ocultadas";
-return;
+async function mostrarCiclorutas() {
+  if (capaCiclorutas) {
+    map.removeLayer(capaCiclorutas);
+    capaCiclorutas = null;
+    document.getElementById("estado").innerHTML = "🚴 Ciclorutas ocultadas";
+    return;
+  }
+
+  try {
+    const res = await fetch("ciclorutas.json?t=" + Date.now());
+    const rutas = await res.json();
+
+    capaCiclorutas = L.layerGroup();
+
+    rutas.forEach(ruta => {
+      const linea = L.polyline(ruta.coordenadas, {
+        color: ruta.color,
+        weight: 8,
+        opacity: 0.95,
+        lineCap: "round",
+        lineJoin: "round",
+        dashArray: "10,6"
+      });
+
+      linea.bindPopup("🚴 " + escaparHtml(ruta.nombre));
+      linea.bindTooltip("🚴 " + escaparHtml(ruta.nombre), {
+        permanent: false,
+        direction: "top"
+      });
+      linea.setStyle({ className: "glowRuta" });
+
+      capaCiclorutas.addLayer(linea);
+    });
+
+    capaCiclorutas.addTo(map);
+    document.getElementById("estado").innerHTML = "🚴 Ciclorutas cargadas";
+    hablar("Ciclorutas cargadas");
+  } catch (error) {
+    document.getElementById("estado").innerHTML = "❌ Error cargando ciclorutas";
+    console.error(error);
+  }
 }
-
-try{
-const res =
-await fetch(
-"ciclorutas.json?t=" + Date.now()
-);
-
-const rutas =
-await res.json();
-
-capaCiclorutas =
-L.layerGroup();
-
-rutas.forEach(ruta=>{
-const linea =
-L.polyline(
-ruta.coordenadas,
-{
-color:ruta.color,
-weight:8,
-opacity:0.95,
-lineCap:"round",
-lineJoin:"round",
-dashArray:"10,6"
-}
-);
-
-linea.bindPopup(
-"🚴 " + escaparHtml(ruta.nombre)
-);
-
-linea.bindTooltip(
-"🚴 " + escaparHtml(ruta.nombre),
-{
-permanent:false,
-direction:"top"
-}
-);
-
-linea.setStyle({
-className:"glowRuta"
-});
-
-capaCiclorutas.addLayer(linea);
-});
-
-capaCiclorutas.addTo(map);
-
-document.getElementById("estado")
-.innerHTML =
-"🚴 Ciclorutas cargadas";
-
-hablar("Ciclorutas cargadas");
-
-}catch(error){
-document.getElementById("estado")
-.innerHTML =
-"❌ Error cargando ciclorutas";
-console.error(error);
-}
-}
-
 
 async function alternarRutasGuardadas() {
   const estado = document.getElementById("estado");
@@ -600,7 +551,7 @@ async function alternarRutasGuardadas() {
   }
 
   estado.innerHTML = "⏳ Cargando rutas de usuarios...";
-  
+
   try {
     const res = await fetch(API_URL + "?accion=obtenerRutas&t=" + Date.now());
     const rutas = await res.json();
@@ -618,7 +569,7 @@ async function alternarRutasGuardadas() {
       if (!ruta.coordenadas || ruta.coordenadas.length < 2) return;
 
       const linea = L.polyline(ruta.coordenadas, {
-        color: "#a855f7", 
+        color: "#a855f7",
         weight: 5,
         opacity: 0.7,
         lineCap: "round"
@@ -633,7 +584,6 @@ async function alternarRutasGuardadas() {
     capaRutasGuardadas.addTo(map);
     estado.innerHTML = "🗺️ Rutas de usuarios cargadas";
     hablar("Rutas de la comunidad cargadas. Mostrando recorridos frecuentes.");
-
   } catch (error) {
     console.error(error);
     estado.innerHTML = "❌ Error cargando rutas viales";
@@ -650,8 +600,8 @@ function escaparHtml(valor) {
 cargarReportes();
 cargarNegocios();
 
-setInterval(cargarReportes, 10000);
-setInterval(cargarNegocios, 30000);
+setInterval(cargarReportes, 60000); // Cada 60s para no cerrar popups ni agotar cuotas
+setInterval(cargarNegocios, 60000);
 </script>
 </body>
 </html>
