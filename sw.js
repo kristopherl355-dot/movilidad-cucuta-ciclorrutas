@@ -1,10 +1,12 @@
-const CACHE_NAME = "app-v2";
+const CACHE_NAME = "app-v3";
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.json",
   "./ciclorutas.json",
-  "./icon.png"
+  "./icon.png",
+  "https://unpkg.com/leaflet/dist/leaflet.css",
+  "https://unpkg.com/leaflet/dist/leaflet.js"
 ];
 
 self.addEventListener("install", event => {
@@ -32,6 +34,19 @@ self.addEventListener("fetch", event => {
 
   if (url.hostname.includes("script.google.com")) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+
+if (url.origin === location.origin) {
+    event.respondWith(
+      fetch(event.request)
+        .then(networkRes => {
+          const resClone = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, resClone));
+          return networkRes;
+        })
+        .catch(() => caches.match(event.request, { ignoreSearch: true }))
+    );
     return;
   }
 
