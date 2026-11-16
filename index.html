@@ -292,11 +292,42 @@ function obtenerIconoNegocio(tipo, premium) {
   });
 }
 
+let vozPreferida = null;
+
+function seleccionarMejorVoz() {
+  const voces = speechSynthesis.getVoices();
+  if (!voces.length) return;
+
+  // Prioriza voces naturales en español (Google, Microsoft Natural/Online, etc.)
+  const prioridades = [
+    v => v.lang.startsWith("es") && v.name.includes("Natural"),
+    v => v.lang.startsWith("es") && v.name.includes("Google"),
+    v => v.lang.startsWith("es-CO"),
+    v => v.lang.startsWith("es-MX"),
+    v => v.lang.startsWith("es-419"),
+    v => v.lang.startsWith("es")
+  ];
+
+  for (const filtro of prioridades) {
+    const encontrada = voces.find(filtro);
+    if (encontrada) {
+      vozPreferida = encontrada;
+      break;
+    }
+  }
+}
+
+// Los navegadores cargan las voces de forma asíncrona
+if ("speechSynthesis" in window) {
+  seleccionarMejorVoz();
+  speechSynthesis.onvoiceschanged = seleccionarMejorVoz;
+}
+
 function hablar(texto) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
 
-  // Elimina emojis y símbolos visuales para que la voz solo lea palabras limpias
+  // Limpia emojis para que no los lea en voz alta
   const textoLimpio = String(texto || "")
     .replace(/[\p{Extended_Pictographic}\uFE0F]/gu, "")
     .replace(/\s+/g, " ")
@@ -305,12 +336,17 @@ function hablar(texto) {
   if (!textoLimpio) return;
 
   const voz = new SpeechSynthesisUtterance(textoLimpio);
-  voz.lang = "es-CO";
-  voz.pitch = 1.0;
-  voz.rate = 1.05;
+  if (vozPreferida) {
+    voz.voice = vozPreferida;
+    voz.lang = vozPreferida.lang;
+  } else {
+    voz.lang = "es-CO";
+  }
+
+  voz.pitch = 1.0; // Tono: 0.8 (más grave) a 1.2 (más agudo)
+  voz.rate = 1.0;  // Velocidad: 0.9 (más pausada) a 1.1 (más ágil)
   speechSynthesis.speak(voz);
 }
-
 function seguirUbicacion() {
   if (watchID) {
     navigator.geolocation.clearWatch(watchID);
