@@ -325,7 +325,9 @@ if ("speechSynthesis" in window) {
 
 function hablar(texto) {
   if (!("speechSynthesis" in window)) return;
-  speechSynthesis.cancel();
+  if (speechSynthesis.speaking || speechSynthesis.pending) {
+    speechSynthesis.cancel();
+  }
 
   // Limpia emojis para que no los lea en voz alta
   const textoLimpio = String(texto || "")
@@ -428,7 +430,9 @@ async function enviarReporte() {
     return;
   }
 
-  loader.style.display = "block";
+loader.style.display = "block";
+  estado.innerHTML = "⏳ Enviando reporte...";
+  hablar("Enviando reporte");
 
   navigator.geolocation.getCurrentPosition(async pos => {
     const datos = {
