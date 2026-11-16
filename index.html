@@ -484,7 +484,7 @@ async function cargarReportes() {
         icon: iconoReporte
       }).addTo(map);
 
-      // Se pasa r.id directamente para que coincida con eliminarReporte en Code.gs
+      // Aquí se asegura de mostrar el tipo, descripción, fecha y el botón
       marker.bindPopup(`
         <b>${escaparHtml(r.tipo)}</b>
         <br><br>
