@@ -603,8 +603,9 @@ async function alternarRutasGuardadas() {
 
   try {
     const res = await fetch(API_URL + "?accion=obtenerRutas&t=" + Date.now());
-    const rutas = await res.json();
-
+   const payload = await res.json();
+    const rutas = Array.isArray(payload) ? payload : (payload.data || []);
+    
     capaRutasGuardadas = L.layerGroup();
 
     if (rutas.length === 0) {
@@ -654,3 +655,4 @@ setInterval(cargarNegocios, 60000);
 </script>
 </body>
 </html>
+
